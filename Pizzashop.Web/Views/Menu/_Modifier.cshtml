@@ -1,0 +1,257 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.ModifierListVM>;
+
+@{
+    string message = "Are you sure you want to delete Modifier?";
+    string allDelete = "Are you sure you want to delete all selected Modifiers?";
+}
+
+<div id="delete-modifier-modal">
+    <partial name="_DeleteConfirmationModal" model="message" />
+</div>
+
+<div id="multiple-modifier-delete-modal">
+    <partial name="_DeleteConfirmationModal" model="allDelete" />
+</div>
+
+<div class="tab-pane fade show active table-responsive" id="v-pills-sandwitch" role="tabpanel"
+    aria-labelledby="v-pills-sandwitch-tab" tabindex="0">
+
+
+
+        <table class="table table-hover  ">
+            <thead class="text-center border-dark ">
+                <tr>
+                    <th scope="col">
+                        <div class="form-check text-start">
+                            <input class="permission-checkbox  all-modifier-check me-2" type="checkbox" value=""
+                                id="flexCheckIndeterminate">
+                            <label class="form-check-label" for="flexCheckIndeterminate">
+                                Name
+                            </label>
+                        </div>
+                    </th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Rate</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center">
+                @if (Model.PagedList.Count() != 0)
+                {
+                    @foreach (var item in Model.PagedList)
+                    {
+                        <tr class="align-content-center">
+                            <td class="text-start ">
+                                <div class="form-check d-flex align-items-center ">
+                                    <input class="modifier-check  me-2" type="checkbox" data-id="@item.Id" id="@item.Id">
+                                    <div class="form-check-label" for="flexCheckDefault">
+                                        <span>@item.Name</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @item.Unit
+                            </td>
+                            <td>
+                                @item.Rate
+                            </td>
+                            <td>
+                                @item.Quantity
+                            </td>
+                            <td>
+                                <a role="button" type="button" class="btn edit-modifier-btn" data-id="@item.Id">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </a>
+                                <button type="button" class="btn delete-modifier-btn" data-bs-toggle="modal"
+                                    data-bs-target="#delete-modal" data-id="@item.Id">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No Modifiers Found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    
+
+    <div id="modifier-pagination">
+        <partial name="_Pagination" model="@Model.Pagination" />
+    </div>
+
+
+</div>
+
+
+<script>
+
+    $(".edit-modifier-btn").click(function () {
+        var id = $(this).data("id");
+        var addModifiermodal = $("#add-modifier-modal");
+
+        $.ajax({
+            method: "GET",
+            url: "/Menu/GetModifierById",
+            data: { id: id },
+            success: function (data) {
+                addModifiermodal.html(data);
+                addModifiermodal.modal("show");
+            }
+        })
+    })
+
+    // Single Delete
+
+    var deleteModal = $("#delete-modifier-modal").find("#delete-modal");
+    $(".delete-modifier-btn").click(function () {
+        var id = $(this).data("id");
+
+        deleteModal.modal("show");
+        deleteModal.find("#delete-btn").attr("id", id);
+    });
+
+    deleteModal.find("#delete-btn").click(function () {
+        var id = $(this).attr("id");
+        $.ajax({
+            type: "POST",
+            url: "/Menu/DeleteModifier",
+            data: { id },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    $(".modifier.active").trigger("click");
+                }
+                else {
+                    toastr.error(response.message);
+                }
+                deleteModal.modal("hide");
+            }
+        })
+    })
+
+    // Multiple Delete
+
+
+
+    $.each(modifiersToDelete, function (i, val) {
+        $(`#${val}.modifier-check`).attr("checked", true);
+        var isAllChecked = $('.modifier-check:checked').length == $('.modifier-check').length;
+        $(".all-modifier-check").prop("checked", isAllChecked)
+    });
+
+
+    $(".modifier-check").change(function () {
+        var checked = $(this).is(":checked");
+        var id = $(this).data("id");
+        if (checked) {
+            modifiersToDelete.push(id);
+        }
+        else {
+            removeModifier(modifiersToDelete, id);
+        }
+
+        if (modifiersToDelete.length != 0) {
+            $("#delete-multiple-modifiers").removeClass("d-none")
+        }
+        else {
+            $("#delete-multiple-modifiers").addClass("d-none")
+        }
+
+        var isAllChecked = $('.modifier-check:checked').length == $('.modifier-check').length;
+        $(".all-modifier-check").prop("checked", isAllChecked)
+    })
+
+    $(".all-modifier-check").change(function () {
+        var checked = $(this).is(":checked");
+        $(".modifier-check").prop("checked", checked);
+        modifiersToDelete = []
+        $(".modifier-check").change();
+    })
+
+    @* Delete Multiple Modifiers  *@
+    var multipleDeleteModal = $("#multiple-modifier-delete-modal").find("#delete-modal");
+
+    $("#delete-multiple-modifiers").click(function () {
+        if (modifiersToDelete.length == 0) {
+            toastr.error("No Modifiers Selected!");
+            return;
+        }
+        multipleDeleteModal.modal("show");
+    });
+
+    multipleDeleteModal.find("#delete-btn").click(function () {
+        $.ajax({
+            type: "POST",
+            url: "/Menu/DeleteManyModifier",
+            data: { ids: modifiersToDelete },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    $(".modifier.active-new").click();
+                }
+                else {
+                    toastr.error(response.message);
+                }
+            }
+        })
+    })
+
+    @* Remove Item From Array  *@
+        function removeModifier(array, idToDelete) {
+            const index = array.indexOf(idToDelete);
+
+            if (index !== -1) {
+                array.splice(index, 1);
+            }
+        }
+
+
+
+    $("#modifier-pagination #next-page-btn").click(function () {
+
+        page = @Model.Pagination.CurrentPage + 1;
+        console.log("nextPage ", page)
+        loadPagedModifier();
+
+    });
+
+    $("#modifier-pagination #prev-page-btn").click(function () {
+
+        page = @Model.Pagination.CurrentPage - 1;
+        console.log("prevPage ", page)
+        loadPagedModifier();
+    })
+
+    $("#modifier-pagination #pagesizelist").change(function () {
+        page = 1;
+        console.log("pagesizelist ", page)
+        loadPagedModifier();
+    })
+
+    function loadPagedModifier() {
+
+        var modifierGroupId = $(".modifier.active-new").attr("id");
+        var searchString = $("#search-modifier").val();
+        var pageSize = $("#modifier-pagination #pagesizelist").val();
+
+        $.ajax({
+            type: "GET",
+            url: `/Menu/GetModifiersByModifierGroupPaged`,
+            data: { modifierGroupId, searchString, page, pageSize },
+            success: function (data) {
+                loadTable.html(data);
+            }
+        });
+    }
+
+
+</script>

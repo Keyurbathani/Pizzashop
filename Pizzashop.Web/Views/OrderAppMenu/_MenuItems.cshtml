@@ -1,0 +1,49 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.ItemListVM>;
+@using Pizzashop.Entity.Constants;
+
+@if (!Model.Any())
+{
+    <div class="text-center w-100 fs-4 mt-4">No Items In This Category!</div>
+}
+
+<div>
+    <div class="d-flex flex-wrap mt-4 gap-3">
+        @foreach (var item in Model)
+        {
+
+            string itemType;
+            switch (item.Type)
+            {
+                case true:
+                    itemType = "bg-success veg-item";
+                    break;
+                case false:
+                    itemType = "bg-danger non-veg-item";
+                    break;
+
+                default:
+                    itemType = "";
+                    break;
+            }
+
+            <div class="menu-card  @itemType" data-name="@item.Name" data-id="@item.Id" data-class="@itemType"
+                data-rate="@item.Rate" data-item-tax="@item.TaxPercentage" role="button">
+                <div class="card-body ">
+                    <div class="shadow menu-img align-content-center h-100">
+                        <img id="displayImage"
+                            src="@(string.IsNullOrEmpty(item.Imageurl) ? Url.Content("~/images/dining-menu.png") : Url.Content("~/" + item.Imageurl))"
+                            class="object-fit-cover icon-img rounded-circle" alt="" style="width: 60px; height: 60px;" />
+                    </div>
+                    <div class="card-content">
+                        <small>@item.Name</small>
+                        <div class="d-flex justify-content-between w-100">
+                            <small class="text-secondary">Rs. @item.Rate</small>
+                            <small class="text-secondary favorite-icon" data-id="@item.Id"><i
+                                    class="bi @(item.IsFavourite.GetValueOrDefault() ? "bi-heart-fill":"bi-heart") text-header"></i></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

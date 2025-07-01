@@ -1,0 +1,150 @@
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Tax And Fees";
+}
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+
+@* TITLE *@
+<div class="container-fluid">
+
+    <div class="title d-flex flex-wrap justify-content-between align-items-center py-2 ms-2">
+        <h2 class="text-header mb-3">Tax And Fees</h2>
+    </div>
+
+
+
+
+
+    <div class="col bg-white me-3">
+        <div class="p-1">
+            <div class="items-title">
+
+                <div class="d-flex mb-2 mb-md-0 modal-footer">
+
+                    <div class="input-group w-25 me-2">
+                        <input name="search " id="search" placeholder="Search" class="form-control border-end-0">
+                        <span class="input-group-text bg-white border-start-0">
+                            <i class="fa-solid fa-search"></i>
+                        </span>
+                    </div>
+
+                    <!-- Button trigger modal for ADD NEW ITEMS -->
+                    @if (canEdit)
+                    {
+
+                        <button id="add-item-btn" type="button"
+                            class="btn btn-primary py-2 px-3 text-decoration-none rounded-2 bg-header text-white ms-1 text-nowrap">
+                            <span> + New Tax</span>
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+            <div id="data-table" class="mt-2">
+                @* Tables *@
+            </div>
+
+            <!-- Add New Tax  Modal -->
+            <div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+@section Scripts {
+
+
+    <script>
+
+        var dataTable = $("#data-table");
+        var addModal = $("#addNewModal");
+
+
+        @* Load Data On first time page load  *@
+
+            $.ajax({
+                type: "GET",
+                url: "/Tax/GetPagedItems",
+                success: function (response) {
+                    dataTable.html(response);
+                }
+            })
+
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
+        var searchchange = debounce(function () {
+            loadPagedItems()
+        }, 200);
+
+        $("#search").keyup(searchchange);
+
+
+        @* Add table  *@
+            $("#add-item-btn").on('click', function (e) {
+                e.preventDefault();
+                loadData("GetTaxById", addModal);
+            })
+
+
+        @* Hepler Functions of AJAX  *@
+
+            function submitData(action, formdata) {
+                $.ajax({
+                    type: "POST",
+                    url: `/Tax/${action}`,
+                    data: formdata,
+                    success: function (data) {
+
+                        toastr.success(data.message);
+
+                    },
+                    error: function () {
+
+                        toastr.error('something went wrong');
+                    }
+                })
+            }
+
+        function loadData(action, element, id) {
+            $.ajax({
+                type: "GET",
+                url: `/Tax/${action}`,
+                data: { "id": id },
+                success: function (data) {
+
+                    element.html(data);
+
+                    if (element == addModal) {
+                        $("#addNewModal").modal("show");
+                    }
+
+                }
+            });
+
+
+        }
+
+    </script>
+
+}

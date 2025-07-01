@@ -1,0 +1,1071 @@
+@model Pizzashop.Entity.ViewModels.OrderDetailsVM;
+
+@{
+    ViewData["Title"] = "Menu | OrderApp";
+    Layout = "_OrderAppLayout";
+}
+
+<style>
+    #category-sidebar {
+        min-height: calc(100vh - 74px);
+    }
+
+    #category-offcanvas {
+        width: 250px;
+        min-width: fit-content;
+    }
+
+    .indicator {
+        height: 12px;
+        width: 12px;
+    }
+
+    .star-color {
+        color: orange;
+    }
+</style>
+
+@{
+    bool hasOrder = (Model != null);
+}
+
+
+@* Add Modifiers Modal *@
+<div class="modal fade" id="add-modifiers-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">
+
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="add-modifiers-partial">
+
+            </div>
+            @if (hasOrder)
+            {
+                <div class="modal-footer ">
+                    <a id="add-btn" type="button" class="btn btn-primary bg-header me-2 rounded-1 px-3" data-item-id=""
+                        data-itemName="">Add</a>
+                    <button type="button" class="btn text-primary bg-white text-header border-primary rounded-1 px-3"
+                        data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (hasOrder)
+{
+    <div class="modal fade" id="qr-code-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-secondary">
+                        Menu
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div id="qr-code" class="modal-body text-center">
+                    <img src="~/images/QR.png" alt="">
+                </div>
+                <div class="text-center p-2">
+                    <button type="button" class="btn btn-outline-header" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Customer Edit Modal *@
+    <div id="menu-customer-details-modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-secondary">
+                        Customer Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div id="menu-customer-details-partial" class="modal-body">
+                    <partial name="_MenuCustomerDetails" model="Model!.CustomerDetails" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="order-comment-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-secondary">
+                        Order Wise Comment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="order-comment-form">
+                    <input type="hidden" asp-for="Id">
+                    <div class="modal-body">
+                        <div class="col mb-2">
+                            <div class="form-floating">
+                                <textarea asp-for="Comment" class="form-control" placeholder="Comment"
+                                    style="height: 100px;"></textarea>
+                                <label for="#order-comment">Comment</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary bg-header rounded-0"
+                            data-bs-dismiss="modal">Save</button>
+                        <button type="reset" class="btn btn-outline-header rounded-0"
+                            data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="complete-order-confirmation-modal">
+        <partial name="_DeleteConfirmationModal" model='new String("Are you sure you want to complete Order?")' />
+    </div>
+
+}
+
+
+<div class="row">
+    <!-- Sidebar  -->
+    <div class="col-auto p-0 " id="category-sidebar">
+        <div class=" offcanvas-lg offcanvas-start bg-light h-100" id="category-offcanvas"
+            aria-labelledby="offcanvasExampleLabel">
+
+            <div class="offcanvas-header">
+                <div class="d-flex align-items-center gap-3" id="offcanvasExampleLabel">
+                    <h4 class="text-dark">Category</h4>
+                </div>
+
+                <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#category-offcanvas"
+                    aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body p-0">
+                <div class="sidebar py-4  w-100">
+                    <div class="d-none d-lg-block  px-3">
+                        <h5 class="fw-bolder">Category</h5>
+                    </div>
+                    <ul class="nav mt-lg-3 d-flex flex-column text-secondary" id="category-list">
+
+                        <li role="button" class="category-tab fw-semibold px-3 py-2" data-id="favorite">Favorite Items
+                        </li>
+                        <li role="button" class="category-tab new-item fw-semibold px-3 py-2">All</li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="d-sm-flex justify-content-between align-items-center mt-2">
+            <div class="col-10 col-sm-4">
+                <div class="input-group ">
+                    <input type="text" name="search " id="item-search" placeholder="Search"
+                        class="form-control border-end-0">
+                    <span class="input-group-text bg-white border-start-0">
+
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex ms-2 gap-3 flex-wrap">
+                <span class="d-flex  align-items-center gap-2">
+                    <div class="indicator bg-success rounded-circle"></div> Vegetarian
+                </span>
+                <span class="d-flex align-items-center gap-2">
+                    <div class="indicator bg-danger rounded-circle"></div> Non-Vegetarian
+                </span>
+                <span class="d-flex align-items-center gap-2">
+                    <div class="indicator bg-warning   rounded-circle"></div> Vegan
+                </span>
+            </div>
+        </div>
+        <div id="menu-items-partial">
+        </div>
+    </div>
+
+    @if (hasOrder)
+    {
+        <div class="col-lg-5" id="menu-table-sidebar">
+            <partial name="_MenuTable" model="Model" />
+        </div>
+
+    }
+
+
+
+</div>
+
+<button type="button" id="click-review-modal" hidden class="btn btn-primary" data-bs-toggle="modal"
+    data-bs-target="#review-modal">
+    Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="review-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Customer Review</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <!-- Food Rating -->
+                    <div class="d-flex justify-content-between align-content-center">
+                        <span>Food</span>
+                        <span class="d-flex gap-2 star-color">
+                            <i class="fa-regular fa-star" data-category="food"></i>
+                            <i class="fa-regular fa-star" data-category="food"></i>
+                            <i class="fa-regular fa-star" data-category="food"></i>
+                            <i class="fa-regular fa-star" data-category="food"></i>
+                            <i class="fa-regular fa-star" data-category="food"></i>
+                        </span>
+                    </div>
+                    <!-- Service Rating -->
+                    <div class="d-flex justify-content-between align-content-center">
+                        <span>Service</span>
+                        <span class="d-flex gap-2 star-color">
+                            <i class="fa-regular fa-star" data-category="service"></i>
+                            <i class="fa-regular fa-star" data-category="service"></i>
+                            <i class="fa-regular fa-star" data-category="service"></i>
+                            <i class="fa-regular fa-star" data-category="service"></i>
+                            <i class="fa-regular fa-star" data-category="service"></i>
+                        </span>
+                    </div>
+                    <!-- Ambience Rating -->
+                    <div class="d-flex justify-content-between align-content-center">
+                        <span>Ambience</span>
+                        <span class="d-flex gap-2 star-color">
+                            <i class="fa-regular fa-star" data-category="ambience"></i>
+                            <i class="fa-regular fa-star" data-category="ambience"></i>
+                            <i class="fa-regular fa-star" data-category="ambience"></i>
+                            <i class="fa-regular fa-star" data-category="ambience"></i>
+                            <i class="fa-regular fa-star" data-category="ambience"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col my-3">
+                    <div class="form-floating">
+                        <textarea id="review-comment" class="form-control" placeholder="Comment"
+                            style="height: 100px;"></textarea>
+                        <label for="#order-comment">Comment</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="save-order-review-button" data-bs-dismiss="modal"
+                    class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        let orderComment;
+        let foodCount = 0;
+        let serviceCount = 0;
+        let ambienceCount = 0;
+
+        let initialOrderItemsState;
+
+        function getOrderItemsState() {
+            let items = [];
+            $("#menu-table-sidebar #order-items .order-item").each(function () {
+                let id = $(this).attr('id');
+                let quantity = $(this).find('.quantity').text();
+                items.push({ id, quantity });
+            });
+            return items;
+        }
+
+        function isOrderItemsStateUnchanged() {
+            let currentState = getOrderItemsState();
+            if (currentState.length !== initialOrderItemsState.length) return false;
+            for (let i = 0; i < currentState.length; i++) {
+                if (currentState[i].id !== initialOrderItemsState[i].id ||
+                    currentState[i].quantity !== initialOrderItemsState[i].quantity) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+        function updateAmount() {
+
+            let menuTableSidebar = $("#menu-table-sidebar");
+            let orderItemsDiv = menuTableSidebar.find(".order-item");
+            let subtotal = menuTableSidebar.find("#order-subtotal");
+            let orderTaxes = menuTableSidebar.find(".order-tax");
+
+            let subtotalAmount = 0;
+            let totalItemTaxAmount = 0;
+            let totalTaxAmount = 0;
+
+            orderItemsDiv.each(function () {
+                let itemRate = parseFloat($(this).data("rate"));
+                let modifiersRatePerItem = 0;
+
+                $(this).find(".item-modifier-rate").each(function () {
+                    modifiersRatePerItem += parseFloat($(this).text());
+                });
+
+                let quantity = parseInt($(this).find(".quantity").text());
+                let itemTax = parseFloat($(this).data("item-tax"));
+
+                let itemTaxAmount = itemTax * 0.01 * itemRate * quantity;
+        @* let itemTaxAmount = itemTax * 0.01 * itemRate; *@
+
+                    $(this).find(".item-total").text(formatAmountWithCommas(itemRate * quantity + itemTaxAmount));
+                $(this).find(".item-modifiers-total").text(formatAmountWithCommas(modifiersRatePerItem * quantity));
+
+                totalItemTaxAmount += itemTaxAmount;
+
+                subtotalAmount += (itemRate + modifiersRatePerItem) * quantity + itemTaxAmount;
+            });
+
+            subtotal.text(formatAmountWithCommas(subtotalAmount));
+
+            if (subtotalAmount == 0) {
+                menuTableSidebar.find(".tax-amount").text(0);
+                menuTableSidebar.find("#order-total").text(0);
+                return;
+            }
+
+            orderTaxes.each(function () {
+                let type = $(this).data("type");
+                let rate = parseFloat($(this).data("rate"));
+        @* console.log("rate", rate)
+                console.log("type", type) *@
+                    let taxAmount = 0;
+
+                if (type == "False") {
+                    taxAmount = rate;
+                }
+                else {
+                    taxAmount = rate * 0.01 * subtotalAmount;
+                }
+
+                $(this).find(".tax-amount").text(formatAmountWithCommas(taxAmount));
+                totalTaxAmount += taxAmount;
+
+            });
+
+            menuTableSidebar.find("#order-total").text(formatAmountWithCommas(subtotalAmount + totalTaxAmount));
+
+            if (isOrderItemsStateUnchanged()) {
+                menuTableSidebar.find("#save-order-btn").prop("disabled", true);
+                console.log("disabled");
+            } else {
+                menuTableSidebar.find("#save-order-btn").prop("disabled", false);
+                console.log("enabled");
+            }
+        }
+
+        function loadMenuItems() {
+            let categoryId = $(".category-tab.new-item").data("id");
+            let action;
+            if (categoryId == "favorite") {
+                action = "GetFavoriteItems";
+            }
+            else {
+                action = "GetItemsByCategoryId";
+            }
+
+            $.ajax({
+                type: "GET",
+                url: `/OrderAppMenu/${action}`,
+                data: { categoryId },
+                success: function (response) {
+                    $("#menu-items-partial").html(response);
+                }
+            })
+        }
+
+        function loadCategories() {
+            let categoryList = $("#category-list");
+            $.ajax({
+                type: "GET",
+                url: "/OrderAppMenu/GetAllCategories",
+                success: function (response) {
+                    if (response.success) {
+                        $.each(response.data, function (i, category) {
+                            categoryList.append(`<li role="button" class="category-tab fw-semibold px-3 py-2 text-capitalize" data-id="${category.id}">
+                                                                                                                                                                                                                                                    ${category.name}</li>`);
+                        })
+                    }
+                }
+            })
+        }
+
+        function checkIfItemAlreadyPrepared(orderItemId, quantity) {
+            let res;
+            $.ajax({
+                type: "GET",
+                url: "/OrderAppMenu/IsItemQuantityPrepared",
+                data: { orderItemId, quantity },
+                async: false,
+                success: function (response) {
+                    res = response;
+                }
+            });
+            return res;
+        }
+
+        function IsOrderServed() {
+        @* debugger; *@
+                let completeOrderBtn = $("#menu-table-sidebar #complete-order-btn");
+            let orderId = completeOrderBtn.parent().data("order-id");
+
+
+            setInterval(() => {
+                if (!completeOrderBtn.is(":disabled")) {
+                    return;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/OrderAppMenu/IsOrderServed",
+                    data: { orderId },
+                    success: function (response) {
+                        if (response.data) {
+                            completeOrderBtn.prop("disabled", false);
+                        }
+                        else {
+                            completeOrderBtn.prop("disabled", true);
+                        }
+                    }
+                })
+            }, 1000);
+        }
+
+        function addItemInMenuTable(item) {
+            let accordionItems = $("#menu-table-sidebar #order-items");
+            let modifiers = "";
+            let modifiersRate = 0;
+            let uniqueModifierIdentifier = "";
+
+
+            for (let modifier of item.modifiersForItem) {
+                modifiers += `<li class="item-modifier" data-id="${modifier.id}"><small>${modifier.name} &emsp; Rs. <span class="item-modifier-rate">${modifier.rate}</span></small></li>`;
+                modifiersRate += parseFloat(modifier.rate);
+                uniqueModifierIdentifier += modifier.id;
+            }
+            let uniqueId = item.id + "-" + uniqueModifierIdentifier;
+
+            let orderItemDiv = $(`#${uniqueId}-item`);
+
+            if (orderItemDiv.length > 0) {
+                orderItemDiv.find(".quantity-right-plus").click();
+                return;
+            }
+
+            let body = `<div class="accordion-item order-item border-top mb-2" id="${uniqueId}-item" data-item-id="${item.id}" data-item-tax="${item.itemTax}" data-rate="${item.rate}" data-modifiers-total="${modifiersRate}">
+                                                                                                                                                                <div class="accordion-header p-1 shadow-sm">
+                                                                                                                                                                    <div class="row align-items-center">
+                                                                                                                                                                        <div class="col-6 ">
+                                                                                                                                                                            <div class="d-flex gap-2 w-100 p-1" data-bs-toggle="collapse"
+                                                                                                                                                                                data-bs-target="#${uniqueId}-collapse" aria-expanded="true" type="button">
+                                                                                                                                                                                <div class="align-content-center">
+                                                                                                                                                                                    <button class="accordion-button collapsed p-0 bg-white border-0"
+                                                                                                                                                                                        type="button" data-bs-toggle="collapse"
+                                                                                                                                                                                        data-bs-target="#${uniqueId}-collapse" type="button">
+
+                                                                                                                                                                                    </button>
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <div class="fw-semibold text-capitalize col item-name">
+                                                                                                                                                                                    ${item.name}
+                                                                                                                                                                                </div>
+
+                                                                                                                                                                            </div>
+                                                                                                                                                                            <div id="${uniqueId}-collapse" class="accordion-collapse collapse" >
+                                                                                                                                                                                <div class="accordion-body py-0">
+                                                                                                                                                                                    <ul class="ps-1 m-0 text-secondary" id="item-modifiers">
+                                                                                                                                                                                        ${modifiers}
+                                                                                                                                                                                    </ul>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+
+                                                                                                                                                                        <div class="col">
+                                                                                                                                                                            <div class="quantity-btn border-secondary rounded-1 border" style>
+                                                                                                                                                                                <div class="input-group d-flex align-items-center justify-content-between ">
+                                                                                                                                                                                    <span class="input-group-btn">
+                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                            class="quantity-left-minus btn btn-number p-1 h-100" data-id="${uniqueId}"
+                                                                                                                                                                                            data-type="minus">
+                                                                                                                                                                                            <i class="bi bi-dash-lg"></i>
+                                                                                                                                                                                        </button>
+                                                                                                                                                                                    </span>
+                                                                                                                                                                                    <div>
+                                                                                                                                                                                        <span type="text" id="${uniqueId}-quantity" class="quantity"
+                                                                                                                                                                                            class="form-control input-number border-0 p-0">1</span>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                    <span class="input-group-btn">
+                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                            class="quantity-right-plus btn btn-number h-100 p-1" data-id="${uniqueId}"
+                                                                                                                                                                                            data-type="plus">
+                                                                                                                                                                                            <i class="bi bi-plus-lg"></i>
+                                                                                                                                                                                        </button>
+                                                                                                                                                                                    </span>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                        <div class="col">Rs. <span class="item-total">${item.rate}</span> <br> <small class="text-secondary">Rs. <span class="item-modifiers-total">${modifiersRate}</span></small></div>
+                                                                                                                                                                        <div class="col">
+                                                                                                                                                                            <button class="btn remove-order-item-btn">
+                                                                                                                                                                                <i class="bi bi-trash3"></i>
+                                                                                                                                                                            </button>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </div>`;
+
+            accordionItems.append(body);
+            updateAmount();
+
+        }
+
+
+
+
+
+        $(document).ready(function () {
+
+            initialOrderItemsState = getOrderItemsState();
+
+            loadCategories();
+            loadMenuItems();
+            IsOrderServed();
+            updateAmount();
+
+            $(document).on("click", ".save-iten-btn", function () {
+                var id = $(this).data("id");
+                var ItemComment = $("#item-comment-" + id).val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/OrderAppMenu/SaveItemComment",
+                    data: { id, ItemComment },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                });
+
+
+            });
+
+            $(".orderItemName").first().addClass("item-click");
+            $(".orderItemName").click(function () {
+                $(".orderItemName").removeClass("item-click");
+                $(this).addClass("item-click");
+            });
+
+            $(document).on("click", ".orderItemName.item-click", function () {
+                var id = $(this).data("id");
+
+                $.ajax({
+                    type: "GET",
+                    url: "/OrderAppMenu/GetItemComment",
+                    data: { id },
+                    success: function (response) {
+
+                        $("#item-comment-" + id).val(response);
+                    }
+                });
+            });
+
+
+            orderComment = $("#order-comment-form textarea").val();
+
+            $("#complete-order-confirmation-modal").find(".modal-title").text("Complete Confirmation");
+
+            //#region QR Code 
+        @* const qrCode = new QRCode(document.getElementById("qr-code"), window.location.toString());  *@
+
+
+                $(document).on("click", ".category-tab", function () {
+                    $(".category-tab").removeClass("new-item");
+                    $(this).addClass("new-item");
+                    loadMenuItems();
+                    $("#item-search").val('');
+                });
+
+            // favourite icon click
+            $(document).on("click", ".favorite-icon", function (e) {
+                e.stopPropagation();
+
+                $(this).find("i").toggleClass("bi-heart-fill bi-heart");
+
+                let itemId = $(this).data("id");
+                let message;
+                let menuCard = $(this).parents(".menu-card");
+
+                let isFavotite;
+                if ($(this).find("i").hasClass("bi-heart-fill")) {
+                    message = "Item marked as favorite!";
+                }
+                else {
+                    message = "Item removed from favorite!";
+                }
+
+                $.ajax({
+                    type: "PATCH",
+                    url: "/OrderAppMenu/ToggleFavoriteItem",
+                    data: { itemId },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(message);
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                })
+            });
+
+            // search items
+            function debounce(func, delay) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            }
+
+            $("#item-search").keyup(debounce(function () {
+
+                let searchString = $(this).val().toLowerCase();
+
+                $(".menu-card").each(function () {
+                    let name = String($(this).data("name"));
+                    name = name.toLowerCase();
+                    if (name.includes(searchString)) {
+                        $(this).removeClass("d-none");
+                    }
+                    else {
+                        $(this).addClass("d-none");
+                    }
+
+                })
+            }, 300));
+
+            // Customer Details Pop up and Edit
+            $(document).on("click", ".reset-menu-customer-details", function () {
+                $(this).parents("form").find("span.text-danger").text('');
+            });
+
+            $(document).on("submit", "#menu-customer-details-form", function (e) {
+                e.preventDefault();
+                let data = $(this).serialize();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/OrderAppMenu/EditCustomerDetails",
+                    data: data,
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            $("#menu-customer-details-partial").load("/OrderAppMenu/GetCustomerDetailsPartial", response.data);
+                            $("#menu-customer-details-modal").modal("hide");
+
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 500);
+
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                })
+            })
+
+            // Order Instruction Pop Up
+            $(document).on("submit", "#order-comment-form", function (e) {
+                e.preventDefault();
+                let data = $(this).serialize();
+
+                $.ajax({
+                    type: "PATCH",
+                    url: "/OrderAppMenu/EditOrderComment",
+                    data: data,
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            orderComment = response.data;
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                })
+
+            });
+
+            $(document).on("reset", "#order-comment-form", function (e) {
+                e.preventDefault();
+                $(this).find("textarea").val(orderComment);
+            });
+
+            // Add Modifier Modal 
+            $(document).on("click", ".menu-card", function () {
+                let itemId = $(this).data("id");
+                let itemName = $(this).data("name");
+                let itemTypeClass = $(this).data("class");
+                let itemRate = $(this).data("rate");
+                let itemTaxPercentage = $(this).data("item-tax");
+
+                var status = $("#menu-table-sidebar #save-order-btn").data("status")
+        @* console.log("status", status) *@
+                                                                        if (status == "Completed") {
+                    toastr.error("Order Already Completed")
+                    return;
+                }
+
+
+
+                $.ajax({
+                    type: "GET",
+                    url: "/OrderAppMenu/GetModifierGroupsForItem",
+                    data: { itemId },
+                    success: function (response) {
+                        let addModifiersModal = $("#add-modifiers-modal");
+                        addModifiersModal.find(".modal-body").html(response);
+                        addModifiersModal.find(".modal-title").text(itemName);
+                        addModifiersModal.find(".modifier-card").addClass(itemTypeClass);
+                        addModifiersModal.find("#add-btn").data("item-id", itemId).data("itemName", itemName).data("rate", itemRate).data("item-tax", itemTaxPercentage);
+
+                        let modifiersLength = addModifiersModal.find(".modifier-card").length;
+                        if (modifiersLength == 0 && addModifiersModal.find("#add-btn").length > 0) {
+                            addModifiersModal.find("#add-btn").click();
+                            return;
+                        }
+                        addModifiersModal.modal("show");
+                    }
+                })
+            });
+
+            $(document).on("click", "#add-modifiers-partial .modifier-card", function () {
+                let selectedModifiersLength = $(this).parents(".modifier-group").find(".modifier-card.selected").length;
+                let maxSelection = parseInt($(this).parents(".modifier-group").data("max"));
+                let modifierId = $(this).data("id");
+
+
+                if ($(`.modifier-card.selected[data-id='${modifierId}']`).length && $(this).hasClass("selected") == 0) {
+                    toastr.error("Modifier Already Added!");
+                    return;
+                }
+
+                if ((selectedModifiersLength < maxSelection) || $(this).hasClass("selected")) {
+                    $(this).toggleClass("selected border-primary border-secondary");
+                    $(this).find(".modifier-card-body").toggleClass("bg-primary-subtle");
+                }
+            });
+
+            //#region Add Modifiers to Item
+            $(document).on("click", "#add-modifiers-modal #add-btn", function () {
+                let applicableModifierGroups = $(this).parents(".modal-content").find(".modifier-group");
+                let modifiersForItem = [];
+                let isValid = true;
+
+                applicableModifierGroups.each(function () {
+                    let minSelection = $(this).data("min");
+                    let maxSelection = $(this).data("max");
+                    let selectedModifiers = $(this).find(".modifier-card.selected");
+
+                    if (selectedModifiers.length > maxSelection || selectedModifiers.length < minSelection) {
+                        toastr.error(`Select Modifiers between ${minSelection} to ${maxSelection} for ${$(this).data("name")}`);
+                        isValid = false;
+                    }
+
+                    selectedModifiers.each(function () {
+                        modifiersForItem.push({
+                            id: $(this).data("id"),
+                            name: $(this).data("name"),
+                            rate: $(this).data("rate"),
+                        });
+                    });
+                });
+
+                if (isValid) {
+                    let item = {
+                        id: $(this).data('item-id'),
+                        name: $(this).data('itemName'),
+                        rate: $(this).data('rate'),
+                        itemTax: $(this).data("item-tax"),
+                        modifiersForItem: modifiersForItem.sort((a, b) => a.id - b.id)
+                    }
+
+                    addItemInMenuTable(item);
+                    $("#add-modifiers-modal").modal("hide");
+                }
+            });
+            //#endregion Add Modifiers to Item
+
+            //#region Remove Order Item From Menu Table
+            $(document).on("click", ".remove-order-item-btn", function () {
+                let orderItemId = $(this).parents(".order-item").data("id");
+
+                if (orderItemId) {
+                    let response = checkIfItemAlreadyPrepared(orderItemId, 1);
+                    if (response.data) {
+                        toastr.error("Sone items have been already Prepared");
+                        return;
+                    }
+                }
+
+                $(this).parents(".order-item").remove();
+                updateAmount();
+        @* updateSaveOrderBtnState(); *@
+                                                                    });
+            //#endregion Remove Order Item From Menu Table
+
+            //#region Save Order
+            $(document).on("click", "#menu-table-sidebar #save-order-btn", function () {
+                let orderData = {
+                    id: $(this).parent().data("order-id"),
+                    orderItems: [],
+                    orderTaxIds: []
+                }
+                let items = $("#menu-table-sidebar .order-item");
+                let taxes = $("#menu-table-sidebar .order-tax");
+
+                items.each(function () {
+                    let orderItemData = {
+                        id: $(this).data("id"),
+                        itemId: $(this).data("item-id"),
+                        quantity: parseInt($(this).find(".quantity").text()),
+                        modifierIds: []
+                    }
+
+                    $(this).find(".item-modifier").each(function () {
+                        let modifierId = $(this).data("id");
+                        orderItemData.modifierIds.push(modifierId);
+                    })
+
+                    orderData.orderItems.push(orderItemData);
+                });
+
+                taxes.each(function () {
+                    orderData.orderTaxIds.push($(this).data("id"));
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "/OrderAppMenu/SaveOrder",
+                    data: orderData,
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 800);
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                })
+            })
+            //#endregion Save Order
+
+            //#region Complete Order
+            $(document).on("click", "#menu-table-sidebar #complete-order-btn", function () {
+                let orderId = $(this).parent().data("order-id");
+                $("#complete-order-confirmation-modal .modal").data("order-id", orderId).modal("show");
+            });
+
+            $(".star-color i").click(function () {
+
+                let category = $(this).data("category");
+                let index = $(`i[data-category="${category}"]`).index(this);
+                let filledStars = $(`i[data-category="${category}"].fa-solid`).length;
+
+                if (filledStars === 1 && index === 0) {
+                    $(this).removeClass("fa-solid").addClass("fa-regular");
+                } else {
+                    $(`i[data-category="${category}"]`).each(function (i) {
+                        if (i <= index) {
+                            $(this).removeClass("fa-regular").addClass("fa-solid");
+                        } else {
+                            $(this).removeClass("fa-solid").addClass("fa-regular");
+                        }
+                    });
+                }
+
+                let count = $(`i[data-category="${category}"].fa-solid`).length;
+
+                if (category === "food") {
+                    foodCount = count;
+                } else if (category === "service") {
+                    serviceCount = count;
+                } else if (category === "ambience") {
+                    ambienceCount = count;
+                }
+
+
+            });
+
+            $(document).on("click", "#complete-order-confirmation-modal #delete-btn", function () {
+                let orderId = $(this).parents(".modal").data("order-id");
+                let paymentMethod = $('input[name=payment-method]:checked').val();
+
+                $.ajax({
+                    type: "PATCH",
+                    url: "/OrderAppMenu/CompleteOrder",
+                    data: { orderId, paymentMethod },
+                    success: function (response) {
+                        if (response.success) {
+
+                            toastr.success(response.message);
+
+                            $("#click-review-modal").click();
+                            $("#generate-invoice-btn").prop("disabled", false);
+
+                            $(document).on("click", "#save-order-review-button", function () {
+
+                                var reviewComment = $("#review-comment").val()
+
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/OrderAppMenu/ReviewOrder",
+                                    data: { orderId, foodCount, serviceCount, ambienceCount, reviewComment },
+                                    success: function (response) {
+                                        toastr.success("Review Added successfully");
+
+                                        setTimeout(function () {
+                                            window.location.reload();
+                                        }, 800);
+                                    }
+
+                                })
+
+                            })
+
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+                    }
+                })
+            })
+
+
+
+            $(document).on("click", "#cancel-order-btn", function () {
+
+                var orderId = $(this).parent().data("order-id");
+
+                $.ajax({
+                    type: "POST",
+                    url: "/OrderAppMenu/CancelOrder",
+                    data: { orderId },
+                    success: function (response) {
+
+                        if (response.success) {
+                            toastr.success(response.message);
+                        }
+                        else {
+                            toastr.error(response.message);
+                        }
+
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 800);
+
+                    }
+
+                })
+
+            })
+            //#endregion Complete Order
+
+
+            $(document).on("click", "#generate-invoice-btn", function () {
+
+                var orderId = $(this).parent().data("order-id");
+                if (orderId) {
+                    let url = `/Orders/OrderPrint?id=${encodeURIComponent(orderId)}`;
+                    window.open(url, '_blank');
+                }
+
+            })
+            //#endregion Complete Order
+
+            //#region Quantity
+            $(document).on("click", ".quantity-right-plus", function (e) {
+
+                var status = $("#menu-table-sidebar #save-order-btn").data("status")
+                if (status == "Completed") {
+                    toastr.error("Order Already Completed")
+                    return;
+                }
+
+                e.preventDefault();
+                var id = $(this).data("id");
+                var quantity = parseInt($(`#${id}-quantity`).text());
+
+                quantity += 1;
+                $(`#${id}-quantity`).text(quantity);
+                updateAmount();
+
+            });
+
+
+
+            // minus button
+            $(document).on("click", ".quantity-left-minus", function (e) {
+                e.preventDefault();
+                var id = $(this).data("id");
+                var orderItemId = $(this).parents(".order-item").data("id");
+                var quantity = parseInt($(`#${id}-quantity`).text());
+
+                if (quantity > 1) {
+
+                    var response = checkIfItemAlreadyPrepared(orderItemId, quantity);
+                    if (response.data) {
+                        toastr.error(`Already ${quantity} quantity of item  have been prepared`);
+                        return;
+                    }
+                    quantity -= 1;
+                    $(`#${id}-quantity`).text(quantity);
+                    updateAmount();
+                }
+
+            });
+
+
+
+
+        });
+    </script>
+}

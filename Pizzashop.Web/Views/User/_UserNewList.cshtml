@@ -1,0 +1,222 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.UserNewListVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+@* delete user modal *@
+<div class="modal fade " id="delete-item-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete User?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-item-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="tab-pane fade show active table-responsive" id="v-pills-sandwitch" role="tabpanel"
+    aria-labelledby="v-pills-sandwitch-tab" tabindex="0" style="height: 500px;">
+    
+
+       <span id="NotSeclected" class="text-danger fs-4"></span>
+
+        <table class="table table-hover" >
+
+            <thead class=" text-center border-dark bg-white position-sticky top-0">
+
+                <tr>
+                
+                    <th scope="col"class="text-start">Name<span class="sort ms-1" role="button" data-sortcolumn="user"><img src="~/images/sort.png" alt="" width="20px"></span></th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Role<span class="sort ms-1" role="button" data-sortcolumn="role"><img src="~/images/sort.png" alt="" width="20px"></span></th>
+                    <th scope="col">Status</th>
+                    <th>Action</th>
+        
+                </tr>
+
+            </thead>
+
+            <tbody class="text-center scroll-y-auto">
+
+                @if(Model.PagedList.ToList().Count != 0)
+                { 
+
+                    @foreach (var item in Model.PagedList)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex gap-2 rounded-circle">
+                                    
+                                    <img id="displayImage" src="@(string.IsNullOrEmpty(item.Imageurl) ? Url.Content("~/images/Default_pfp.svg.png") : Url.Content("~/" + item.Imageurl))"
+                                        class="object-fit-cover icon-img rounded-circle" alt=""  style="width: 30px; height: 30px;"/>
+
+                                    @item.Name
+
+                                </div>
+                                
+                            </td>
+                            <td>
+                                @item.Email
+                            </td>
+                            <td>
+                                @item.Phone
+                            </td>
+                            <td>
+                                @item.Role
+                            </td>
+                            
+                            <td>
+                            @if(@item.IsActive == true){
+                                <span class="text-success">
+                                    Active
+                                </span>
+                            }
+                            else{
+                                <span class="text-danger">
+                                    Inactive
+                                </span>
+
+                            }
+                            </td>
+
+                            @if(canDelete || canEdit){
+
+                                <td class="d-flex gap-2 align-items-center justify-content-center text-center">
+                                
+                                    @if(canEdit){
+                                        <a asp-action="EditUser" asp-route-id="@item.Id" class="text-dark fs-4">
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </a>
+                                    }
+                                    @if(canDelete){
+
+                                        <a data-id="@item.Id" class="nav-link delete-btn ms-2 fs-4">
+                                            <i class="fa-solid fa-trash" data-bs-toggle="modal"data-bs-target="#delete-item-modal"></i>
+                                         </a>
+                                       
+                                    } 
+
+                                </td>
+
+                            }
+                            else
+                            {
+                                <td class="text-danger"> N/A </td>
+                            }
+
+                        </tr>
+                    }
+                
+                }
+                else
+                {
+                  <tr><td colspan="6">No Records Found</td></tr>
+                }
+                
+            </tbody>
+            
+        </table>
+ 
+
+
+</div>
+
+<partial name="_Pagination" model="@Model.Pagination" />
+
+<script>
+
+    var page = @Model.Pagination.CurrentPage;
+
+    
+    @* Delete User  *@
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-item-btn").attr("id", id);
+    })
+
+    $("#delete-item-btn").click(function () {
+
+        var id = $(this).attr("id");
+        
+        $.ajax({
+            type: "POST",
+            url: `/User/DeleteUser`,
+            data:{id},
+            success: function (data) {
+
+                toastr.success(data.message);
+                loadPagedItems()
+            },
+            error: function () {
+                toastr.error('something went wrong');
+            }
+        })
+        
+    })
+
+    
+    $("#pagesizelist").change(function () {
+        page = 1;
+        loadPagedItems();
+    })
+
+    $(".sort").click(function () {
+
+        var newSortColumn = $(this).data("sortcolumn");
+        if (newSortColumn == sortColumn) {
+            isAsc = !isAsc;
+        }
+        else {
+            isAsc = true;
+        }
+        sortColumn = newSortColumn;
+        loadPagedItems();
+
+    })
+        
+
+    function loadPagedItems() {
+        
+        var searchString = $("#search").val();
+        var pageSize = $("#pagesizelist").val();
+
+        $.ajax({
+            type: "GET",
+            url: `/User/GetPagedUsers`,
+            data: { searchString, page, pageSize , isAsc , sortColumn },
+            success: function (data) {
+                dataTable.html(data);
+            }
+        });
+
+    }
+
+    function nextPage() {
+        page = @Model.Pagination.CurrentPage + 1;
+        loadPagedItems();
+    }
+
+    function prevPage() {
+        page = @Model.Pagination.CurrentPage - 1;
+        loadPagedItems();
+    }
+    
+</script>

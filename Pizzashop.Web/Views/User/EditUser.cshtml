@@ -1,0 +1,260 @@
+@{
+    ViewData["title"] = "UpdateUser";
+    Layout = "_DashboardLayout";
+}
+
+@model Pizzashop.Entity.ViewModels.AddNewUserModel
+
+<div class="container">
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+        <h1 class="h2">Update User</h1>
+        <div class="d-flex mb-2 mb-md-0">
+            <button type="button" class="btn login-btn"><a class="text-white" href="/user/index">Back</a></button>
+        </div>
+    </div>
+
+
+    <form asp-action="EditUserNew" asp-controller="User" enctype="multipart/form-data">
+
+        <div class="row ">
+
+            <input type="hidden" asp-for="Id">
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <input type="text" asp-for="FisrtName" class="form-control" id="exampleFormControlInput1"
+                        placeholder="First name">
+                    <label>First name</label>
+                </div>
+                <span asp-validation-for="FisrtName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <input type="text" asp-for="LastName" class="form-control" id="exampleFormControlInput2"
+                        placeholder="Last name">
+                    <label>Last Name</label>
+                </div>
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <input type="text" asp-for="Username" class="form-control" id="exampleFormControlInput3"
+                        placeholder="Username">
+                    <label>Username</label>
+                </div>
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <select id="RoleId" name="RoleId" asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles">
+                        <option selected disabled> select role </option>
+                    </select>
+                    <label for="RoleId" class="float">Role</label>
+                </div>
+                <span asp-validation-for="RoleId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <input type="email" asp-for="Email" class="form-control" id="exampleFormControlInput4"
+                        placeholder="Email">
+                    <label>Email</label>
+
+                </div>
+                <span asp-validation-for="Email" class="text-danger"></span>
+
+            </div>
+
+            <div class="col-md-6 mt-2">
+                <div class="form-floating">
+                    <select class="form-select" asp-for="isActive">
+                        <option value="true">active</option>
+                        <option value="false">inactive</option>
+                    </select>
+                    <label>Status</label>
+                </div>
+            </div>
+
+
+            <div class="col-md-12 mt-2">
+
+                <label for="fileInput" class="custom-file-upload bg-white d-flex align-items-center justify-content-center">
+
+                <div class="d-flex gap-2 rounded-circle">
+                                        <img id="displayImage"
+                                    src="@(string.IsNullOrEmpty(@Model.Imageurl) ? Url.Content("~/images/Default_pfp.svg.png") : Url.Content("~/" + @Model.Imageurl))"
+                                    class="object-fit-cover icon-img rounded-circle" alt="" style="width: 100px; height: 100px;" />
+                              
+                </div>
+                    <i class="fa fa-cloud-upload ms-2"></i> <span class="browse">Browse files</span>
+                 <img class="user-img d-none" alt="" id="displayImage">
+                </label>
+                <input asp-for="ProfileImage" type="file" id="fileInput" class="d-none" accept="image/*" />
+                <input type="hidden" asp-for="Imageurl" />
+                <p id="file-name">No file chosen</p>
+
+            </div>
+
+
+            <div class="col-md-4 mt-2">
+                <div class="form-floating ">
+                    <select id="CountryId" name="CountryId" asp-for="CountryId" class="form-select" asp-items="ViewBag.Countries">
+                        <option selected disabled> select Country </option>
+                    </select>
+                    <label for="CountryId" class="float">Country</label>
+                </div>
+                <span asp-validation-for="CountryId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mt-2">
+                <div class="form-floating ">
+                    <select id="StateId" name="StateId" asp-for="StateId" class="form-select" asp-items="ViewBag.States">
+                        <option selected disabled> select state </option>
+                    </select>
+                    <label for="StateId" class="float">State</label>
+                </div>
+                <span asp-validation-for="StateId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 mt-2">
+                <div class="form-floating ">
+                    <select id="CityId" name="CityId" asp-for="CityId" class="form-select" asp-items="ViewBag.Cities">
+                        <option selected disabled> select city </option>
+                    </select>
+                    <label for="CityId" class="float">City</label>
+                </div>
+                <span asp-validation-for="CityId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 mt-2">
+                <div class="form-floating">
+                    <input type="number" asp-for="Zipcode" class="form-control" id="exampleFormControlInput5"
+                        placeholder="Zip code">
+                    <label>Zip Code</label>
+                </div>
+                <span asp-validation-for="Zipcode" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 mt-2">
+                <div class="form-floating">
+                    <input type="text" asp-for="Address" class="form-control" id="exampleFormControlInput6"
+                        placeholder="Address">
+                    <label>Address</label>
+                </div>
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 mt-2">
+                <div class="form-floating">
+                    <input type="number" asp-for="Phone" class="form-control" id="exampleFormControlInput7"
+                        placeholder="Phone">
+                    <label>Phone</label>
+                </div>
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mt-3 modal-footer">
+
+                <button type="submit" class="btn login-btn me-2">Update</button>
+                <a href="/user/index" class="btn btn-secondary me-3">Cancel</a>
+
+            </div>
+
+    </form>
+
+
+</div>
+
+<script src=" https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+
+    
+    $(document).ready(function () {
+
+        // Image Preview & Upload
+       
+        $('#fileInput').change(function (event) {
+                var input = event.target;
+                var reader = new FileReader();
+                 let fileName = $(this).val().split("\\").pop();
+                 let file = event.target.files[0];
+
+                reader.onload = function (e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    
+                    image.onload = function(){
+
+                        $("#file-name").text(fileName);
+                        $('#displayImage').attr('src', reader.result);
+                        $(".user-img").removeClass("d-none");
+                        $(".fa-cloud-upload").addClass("d-none")
+                        $(".browse").addClass("d-none")
+                        
+                    }
+
+                    image.onerror = function(){
+                        @* $("#ImageValidation").html("Invalid image file.") *@
+                        toastr.error("Invalid image file. Please select a valid image.");                  
+                        $("#file-name").text("No file chosen");
+                        $("#fileInput").val('');
+                    }
+                    
+                    
+                };
+
+                if (input.files && input.files[0]) {
+                    reader.readAsDataURL(input.files[0]);
+                   
+                }
+            });
+
+
+        $('#CountryId').change(function () {
+
+            var countryId = $(this).val();
+
+             $("#StateId").empty().append('<option selected disabled hidden>Select State</option>');
+             $("#CityId").empty().append('<option selected disabled hidden>Select City</option>');
+
+            $.getJSON('@Url.Action("GetStates", "Dashboard")', { countryId: countryId }, function (data) {
+                var stateSelect = $('#StateId');
+                stateSelect.empty().append('<option selected disabled hidden>Select State</option>');;
+                $.each(data, function (index, state) {
+                    stateSelect.append($('<option>', {
+                        value: state.id,
+                        text: state.name
+                    }));
+                });
+                @* stateSelect.val(`@Model.StateId`).change(); *@
+            });
+        });
+
+        $('#StateId').change(function () {
+
+            var stateId = $(this).val();
+
+            $("#CityId").empty().append('<option selected disabled hidden>Select City</option>');
+
+            $.getJSON('@Url.Action("GetCities", "Dashboard")', { stateId: stateId }, function (data) {
+                var citySelect = $('#CityId');
+                citySelect.empty().append('<option selected disabled hidden>Select City</option>');
+                $.each(data, function (index, city) {
+                    citySelect.append($('<option>', {
+                        value: city.id,
+                        text: city.name
+                    }));
+                });
+                @* citySelect.val(`@Model.CityId`); *@
+            });
+        });
+
+
+        @* $('#CountryId').change();
+        $('#RoleId').change(); *@
+
+    });
+</script>

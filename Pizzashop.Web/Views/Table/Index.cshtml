@@ -1,0 +1,382 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.OrderAppSectionListVM>;
+
+@{
+    ViewData["title"] = "Table View";
+    Layout = "_OrderAppLayout";
+}
+
+@* Waiting Token modal *@
+<div class="modal fade" id="waiting-token-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Waiting Token Details</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid customer-waitingList">
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-floating my-3">
+                                <input type="email" class="form-control" id="Email">
+                                <label for="Email">Email</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="Name">
+                                <label for="Name">Name</label>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-12">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="Phone">
+                                <label for="Phone">Phone</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="NoOfPerson">
+                                <label for="NoOfPerson">NoOfPerson</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="  form-floating ">
+                                <select role="button" class="form-select section-select" <option>Select Section</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn login-btn" data-bs-dismiss="modal">Save</button>
+                <button type="button" class="btn all-border" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+
+    <div class="table-header d-flex justify-content-between align-items-center">
+
+        <span class="header-name  fs-3">
+            Table View
+        </span>
+
+        <div class="table-indication-all d-flex gap-2 align-items-center">
+
+            <span class="d-flex align-items-center gap-1">
+                <div class="table-indication bg-secondary"></div>
+                Available
+            </span>
+            <span class="d-flex align-items-center gap-1">
+                <div class="table-indication border border-success"></div>
+                Selected
+            </span>
+            <span class="d-flex align-items-center gap-1">
+                <div class="table-indication bg-success"></div>
+                Assigned
+            </span>
+            <span class="d-flex align-items-center gap-1">
+                <div class="table-indication bg-info"></div>
+                Running
+            </span>
+
+        </div>
+
+
+    </div>
+
+    <div class="accordion accordion-flush mt-4" id="accordionFlushExample">
+
+        @foreach (var item in Model)
+        {
+            <div class="accordion-item mb-2">
+
+                <div class="d-flex justify-content-between">
+                    <h2 class="accordion-header flex-grow-1">
+
+                        <button class="accordion-button collapsed text-capitalize" id="accordion-section"
+                            data-id="@item.SectionId" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#@item.SectionId" aria-expanded="false" aria-controls="@item.SectionId">
+
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <span>@item.SectionName</span>
+                            </div>
+
+                        </button>
+
+                    </h2>
+
+                    <div class="accordion-header table-indication-all d-flex gap-2 align-items-center me-2">
+
+                        <span class="d-flex align-items-center gap-1">
+                            <div class="table-indication bg-secondary Available"></div>
+                            <span class="status-Available">
+                                @item.IsAvailableCount
+                            </span>
+                        </span>
+
+                        <span class="d-flex align-items-center gap-1">
+                            <div class="table-indication bg-success "></div>
+                            <span class="status-pending">
+                                @item.IsAssignedCount
+                            </span>
+                        </span>
+
+                        <span class="d-flex align-items-center gap-1">
+                            <div class="table-indication bg-info"></div>
+                            <span class="status-running">
+                                @item.IsRunningCount
+                            </span>
+                        </span>
+                        <button type="button"
+                            class="add-item-btn btn btn-primary py-2 px-3 text-decoration-none rounded-2 bg-header text-white ms-1 text-nowrap">
+                            + Waiting Token
+                        </button>
+
+                    </div>
+                </div>
+
+
+                <div id="@item.SectionId" class="accordion-collapse collapse table-order-details"
+                    data-bs-parent="#accordionFlushExample">
+
+                    <div class=" d-flex gap-2 m-3">
+
+                        @foreach (var table in item.TableLists)
+                        {
+
+                            string statusNew = table.Status == "Completed" || table.Status == "Cancelled" ? "Available" :
+                            table.Status;
+
+                            <div class="card @(statusNew)" data-status="@statusNew" data-capacity="@table.Capacity"
+                                style="width: 18rem; border-style: groove;" data-id="@table.TableId"
+                                data-order="@table.OrderId">
+
+                                <div class="card-body">
+
+                                    <div class="d-flex justify-content-between">
+
+                                        <h5 class="card-title">@table.TableName</h5>
+
+                                        <span>
+                                            @if (statusNew == "InProgress" || statusNew == "Served")
+                                            {
+                                                @if (table.TotalAmount != 0)
+                                                {
+                                                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                                                    @table.TotalAmount
+                                                }
+                                            }
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="d-flex justify-content-between align-items-center my-3">
+                                        <h6 class="d-flex flex-column align-items-center">
+                                            <img src="~/images/capacity.png" alt="" style="width: 20px; height: 20px;">
+                                            @table.Capacity
+                                        </h6>
+                                        <h6 class="d-flex flex-column align-items-center">
+                                            <i class="fa-solid fa-clock text-secondary"></i>
+                                            @{
+                                                DateTime? newtime = table.Status == "Completed" || table.Status == "Cancelled" ?
+                                                null : table.Time;
+                                            }
+                                            <span class="@(newtime != null ? "live-time" : "")"
+                                                data-order-time="@newtime.GetValueOrDefault().ToString("O")">
+                                                @if (newtime == null)
+                                                {
+                                                    <span> 0 Min</span>
+                                                }
+                                            </span>
+                                        </h6>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        }
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="assign-btn login-btn rounded m-2 px-4 py-2" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#NewOffCanvas" aria-controls="NewOffCanvas" disabled>
+                            Assign
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        }
+
+    </div>
+
+
+
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="NewOffCanvas" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Waiting List</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+
+        <div id="waitinglist-for-assign">
+
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        function updateLiveTimes() {
+            $('.live-time').each(function () {
+                const orderTime = new Date($(this).data('order-time'));
+                const now = Date.now();
+                const diff = Math.floor((now - orderTime) / 1000);
+                const days = Math.floor(diff / 86400);
+                const hours = Math.floor((diff % 86400) / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                $(this).text(`${days}D ${hours}H ${minutes}M ${seconds}S`);
+            });
+        }
+        setInterval(updateLiveTimes, 1000)
+
+        $(".accordion-button").click(function () {
+            $(".accordion-button").removeClass("new");
+            $(this).addClass("new");
+        });
+
+
+
+        @* Load _TokenAddModal *@
+                        var addModal = $("#addNewModal");
+        $(".add-item-btn").on('click', function (e) {
+            e.preventDefault();
+            loadDataForToken("GetTokenById", addModal);
+        })
+
+        function loadDataForToken(action, element, id) {
+            $.ajax({
+                type: "GET",
+                url: `/Table/${action}`,
+                data: { "id": id },
+                success: function (data) {
+                    element.html(data);
+                    if (element == addModal) {
+                        $("#addNewModal").modal("show");
+                    }
+                }
+            });
+        }
+        @* End *@
+
+        @* select Table *@
+                    var AssignTable = new Set();
+        let total_capacity = 0;
+
+        $(".card.Available").click(function () {
+
+            if ($(this).hasClass("rm-available")) {
+                var id = $(this).data("id")
+                var capacity = parseInt($(this).data('capacity'));
+                total_capacity -= capacity;
+                AssignTable.delete(id)
+                console.log("AssignTable for remove", AssignTable)
+                $(this).removeClass("border border-success");
+                $(this).removeClass("rm-available");
+                if ($(".rm-available").length == 0) {
+                    $(".assign-btn").prop("disabled", true)
+                }
+                console.log("capacity", total_capacity)
+
+            }
+            else {
+                $(this).addClass("border border-success");
+
+                var capacity = parseInt($(this).data('capacity'));
+                total_capacity += capacity;
+                $(".assign-btn").prop("disabled", false)
+                var id = $(this).data("id")
+                AssignTable.add(id)
+                $(this).addClass("rm-available");
+            }
+            console.log("AssignTable", AssignTable)
+            console.log("capacity", total_capacity)
+        })
+
+        $(document).on("click", ".accordion-button", function () {
+            $(".card.rm-available").each(function () {
+                var id = $(this).data("id");
+                AssignTable.delete(id);
+            });
+
+            $(".card").removeClass("border-success border rm-available");
+
+            total_capacity = 0;
+            $(".assign-btn").prop("disabled", true);
+            console.log("AssignTable cleared on accordion click", AssignTable);
+            console.log("capacity", total_capacity);
+        });
+
+        $(".card.InProgress").click(function () {
+            var id = $(this).data("order")
+            window.location.href = `/orderappmenu/menu?id=${id}`
+        })
+        $(".card.Served").click(function () {
+            var id = $(this).data("order")
+            window.location.href = `/orderappmenu/menu?id=${id}`
+        })
+
+        $(".card.Pending").click(function () {
+            var id = $(this).data("order")
+            window.location.href = `/orderappmenu/menu?id=${id}`
+        })
+
+        @* open offcanvas *@
+            $(".assign-btn").click(function () {
+
+                console.log("total_capacity", total_capacity)
+
+                var sectionId = $(".accordion-button.new").data("id");
+                $.ajax({
+                    type: "GET",
+                    url: `/Table/GetAllTokensBySection`,
+                    data: { sectionId },
+                    success: function (response) {
+                        $("#waitinglist-for-assign").html(response);
+                    }
+                });
+            })
+
+    </script>
+
+}

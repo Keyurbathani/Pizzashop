@@ -1,0 +1,464 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.SectionVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+@* Add/Edit section Modal *@
+<div class="modal fade" id="addSectionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="add-section-form">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">
+                        <span id="sectionHeading">Add Sections</span>
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="clearModalData()"></button>
+                </div>
+                <div class="modal-body">
+
+                    <input type="hidden" name="id" id="sectionId">
+
+                    <div class="mb-2">
+                        <input type="text" name="name" id="sectionName" class="form-control " placeholder="Name*"
+                            required>
+                    </div>
+                    <div class="mb-2">
+                        <textarea name="description" id="description" class="form-control mb-2"
+                            placeholder="Description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer ">
+                    <button type="submit" class="btn btn-primary bg-header rounded-0">Save </button>
+                    <button type="button" class="btn rounded-0 border-dark me-3" data-bs-dismiss="modal"
+                        onclick="clearModalData()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Delete Confirmation Modal *@
+<div class="modal fade " id="delete-section-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete Section?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-section-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@* section *@
+<div class="row ">
+
+
+    <div class="sidebar2 border-end border-primary bg-white ms-3">
+
+        <div class="category-title d-flex align-items-center justify-content-between mt-2">
+
+            <h4 class="text-header">
+                <span class="fs-3">Sections</span>
+            </h4>
+
+            @if (canEdit)
+            {
+                <button type="button" role="button" class="add-category btn border-primary text-primary text-header"
+                    data-bs-toggle="modal" data-bs-target="#addSectionModal">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            }
+
+        </div>
+
+        <div class="d-flex align-items-start w-100">
+
+            <div class="flex-md-column align-items-start d-flex flex-md-nowrap mt-3 w-100">
+                @foreach (var item in Model)
+                {
+                    <div id="@item.Id" class="item d-flex align-items-center justify-content-between item-btn mb-3 w-100">
+
+                        <button class="nav-link text-start d-flex align-items-center w-100" type="button">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                            <span class="nav-link text-dark ms-1 text-capitalize">
+                                @item.Name
+                            </span>
+                        </button>
+
+
+                        <div class="d-flex align-items-center action_btn">
+
+                            @if (canDelete || canEdit)
+                            {
+                                @if (canEdit)
+                                {
+                                    <button
+                                        onClick="setModalData(`@item.Id.ToString()`,`@item.Name.ToString()`,`@item.Description?.ToString()` )"
+                                        class="btn nav-link bg-transparent active edit-btn"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                }
+
+                                @if (canDelete)
+                                {
+                                    <button data-id="@item.Id" class="btn bg-transparent nav-link active delete-btn ms-2"><i
+                                            class="fa-solid fa-trash" data-bs-toggle="modal"
+                                            data-bs-target="#delete-section-modal"></i></button>
+                                }
+                            }
+                            else
+                            {
+                                <span>N/A</span>
+                            }
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+
+
+    @* tables *@
+    <div class="col bg-white me-3">
+        <div class="p-1">
+            <div class="items-title">
+                <h4 class="text-header">
+
+                    <h3 class="item-header">Tables</h3>
+
+                    <div class="dropdown d-md-none">
+                        <button class="btn fs-3 dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Tables
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <div class="category-title d-flex align-items-center justify-content-between mt-2">
+
+                                <h4 class="text-header">
+                                    <span class="fs-5">Categories</span>
+                                </h4>
+                                @if (canEdit)
+                                {
+                                    <button type="button" role="button" class="add-category btn border-primary text-header"
+                                        data-bs-toggle="modal" data-bs-target="#addSectionModal">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                }
+
+                            </div>
+
+                            @foreach (var item in Model)
+                            {
+                                <div id="@item.Id"
+                                    class="d-flex align-items-center justify-content-between w-100 item item-btn mb-2 dropdown-item">
+
+                                    <button class="nav-link text-start d-flex align-items-center" type="button">
+                                        <i class="fa-solid fa-grip-vertical"></i>
+                                        <span class="nav-link text-dark ms-1 text-capitalize">
+                                            @item.Name
+                                        </span>
+                                    </button>
+
+
+                                    <div class="d-flex align-items-center ms-4 action_btn">
+
+                                        @if (canDelete || canEdit)
+                                        {
+                             
+                                            @if (canEdit)
+                                            {
+                                                <button
+                                                    onClick="setModalData(`@item.Id.ToString()`,`@item.Name.ToString()`,`@item.Description?.ToString()` )"
+                                                    class="btn nav-link bg-transparent active edit-btn"><i
+                                                        class="fa-solid fa-pencil"></i></button>
+                                            }
+                                            @if (canDelete)
+                                            {
+                                                <button data-id="@item.Id"
+                                                    class="btn bg-transparent nav-link active delete-btn ms-2">
+                                                    <i class="fa-solid fa-trash" data-bs-toggle="modal"
+                                                        data-bs-target="#delete-section-modal"></i>
+                                                </button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>N/A</span>
+                                        }
+
+                                    </div>
+                                </div>
+                            }
+
+
+
+                        </ul>
+                    </div>
+                </h4>
+
+                <div class="d-flex mb-2 mb-md-0 modal-footer table-modal-footer">
+
+                    <div class="input-group w-25">
+                        <input name="search " id="search" placeholder="Search" class="form-control border-end-0">
+                        <span class="input-group-text bg-white border-start-0">
+                            <i class="fa-solid fa-search"></i>
+                        </span>
+                    </div>
+
+
+                    @if (canDelete)
+                    {
+
+                        <button class="btn border border-secondary delete-btn ms-2 d-none" id="delete-multiple-items"><i
+                                class="fa-solid fa-trash"></i></button>
+                    }
+
+
+                    @if (canEdit)
+                    {
+                        <!-- Button trigger modal for ADD NEW ITEMS -->
+                        <button id="add-item-btn" type="button"
+                            class="btn btn-primary py-2 px-3 text-decoration-none rounded-2 bg-header text-white ms-1 text-nowrap">
+                            <span> + New Table</span>
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+            <div id="data-table" class="mt-2">
+                @* Tables *@
+            </div>
+
+            <!-- Add New Item Menu Modal -->
+            <div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    var dataTable = $("#data-table");
+    var addModal = $("#addNewModal");
+    var itemsToDeleteIn = [];
+
+    $(".item").first().addClass("active-new");
+    $(".item").click(function () {
+        $(".item").removeClass("active-new");
+        $(this).addClass("active-new");
+    });
+
+    $.ajax({
+        type: "GET",
+        url: "/Section/GetPagedTables",
+        success: function (response) {
+            dataTable.html(response);
+        }
+    })
+
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    var searchchange = debounce(function () {
+        GetPagedTables()
+    }, 200);
+
+    $("#search").keyup(searchchange);
+
+    $(".item-btn").click(function () {
+        itemsToDelete = []
+        page = 1;
+        $("#search").val('');
+        GetPagedTables();
+    });
+
+    var validator = $("#add-section-form").validate({
+
+        rules: {
+            name: {
+                required: true,
+                minlength: 3,
+                maxlength: 49,
+            },
+
+            description: {
+               maxlength: 99, 
+            }
+
+        },
+        messages: {
+            name: {
+                required: "Please enter Section Name",
+                minlength: "Section name must be at least 3 characters long",
+                maxlength : "Section name should me less than 50 characters long"
+            },
+
+            description: {
+               maxlength: "Description should me less than 100 characters long", 
+            }
+
+        },
+        highlight: function (element) {
+            $(element).parent().addClass('error ')
+        },
+        unhighlight: function (element) {
+            $(element).parent().removeClass('error')
+        },
+    });
+
+    $('#add-section-form').one('keyup', function () { $(this).valid(); });
+
+    $("#add-section-form").submit(function (e) {
+
+        e.preventDefault();
+        if (!$(this).valid()) {
+            return;
+        }
+
+        var formdata = {
+            name: $("#sectionName").val(),
+            description: $("#description").val(),
+        }
+
+        var id = $("#sectionId").val()
+        if (id.length != 0) {
+            formdata.id = id;
+            submitDataInSections("EditSection", formdata)
+        }
+        else {
+            submitDataInSections("AddSection", formdata)
+        }
+
+        $("#addSectionModal").modal("hide");
+    })
+
+
+    $("#delete-section-btn").click(function () {
+        var id = $(this).attr("id");
+        console.log(id);
+        submitDataInSections("DeleteSection", { "id": id });
+    })
+
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-section-btn").attr("id", id);
+    })
+
+
+    $("#add-item-btn").on('click', function (e) {
+        e.preventDefault();
+        loadDataInSection("GetTableById", addModal);
+    })
+
+    function setModalData(id, name, description) {
+
+        var modal = $("#addSectionModal");
+        modal.find("#sectionId").val(id);
+        modal.find("#sectionHeading").html("Edit Sections");
+        modal.find("#sectionName").val(name);
+        modal.find("#description").val(description);
+        modal.modal("show");
+
+    }
+
+    function clearModalData() {
+
+        var modal = $("#addSectionModal");
+        modal.find("#sectionId").val('');
+        modal.find("#sectionName").val('');
+        modal.find("#description").val('');
+        modal.find("#sectionHeading").html("Add Sections");
+        validator.resetForm();
+
+    }
+
+
+        function submitDataInSections(action, formdata) {
+
+            $.ajax({
+                type: "POST",
+                url: `/Section/${action}`,
+                data: formdata,
+                success: function (data) {
+
+                    if (data.success) {
+                        toastr.success(data.message);
+                        loadDataForIndex("GetSections", data.id)
+                    }
+                    else {
+                        toastr.error(data.message)
+                    }
+                },
+                error: function () {
+                    toastr.error('something went wrong');
+                }
+            })
+
+        }
+
+    function loadDataForIndex(action, id) {
+        $.ajax({
+            type: "GET",
+            url: `/Section/${action}`,
+            success: function (data) {
+
+                $("#section").html(data);
+                $("#" + id).click()
+
+            }
+        })
+    }
+
+
+
+    function loadDataInSection(action, element, id) {
+        $.ajax({
+            type: "GET",
+            url: `/Section/${action}`,
+            data: { "id": id },
+            success: function (data) {
+                element.html(data);
+
+                if (element == addModal) {
+                    $("#addNewModal").modal("show");
+                }
+
+            }
+        });
+
+    }
+
+</script>

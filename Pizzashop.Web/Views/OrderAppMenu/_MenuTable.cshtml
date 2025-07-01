@@ -1,0 +1,204 @@
+@model Pizzashop.Entity.ViewModels.OrderDetailsVM;
+@using Pizzashop.Entity.Constants;
+ 
+<div class="shadow ">
+    <div class=" offcanvas-lg offcanvas-start bg-white rounded-1 mt-3" id="menu-table-offcanvas"
+        aria-labelledby="offcanvasExampleLabel">
+ 
+        <div class="offcanvas-header">
+ 
+            <button type="button" class="btn-close" data-bs-toggle="offcanvas" data-bs-target="#menu-table-offcanvas"
+                aria-label="Close"></button>
+        </div>
+ 
+        <div class="offcanvas-body">
+            <div class="sidebar py-2 px-3  w-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2" id="offcanvasExampleLabel">
+                        <div class="bg-primary-subtle p-2">
+                            <img src="~/images/icons/dinner-table.svg" alt="" width="30px">
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span>@Model.SectionName</span>
+                            <span><b>Table:</b> @string.Join(", ", Model.TablesName)</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2" data-order-id="@Model.Id">
+                        <button id="qr-code-btn" type="button" data-bs-toggle="modal" data-bs-target="#qr-code-modal" class="btn all-border"><i class="bi bi-qr-code-scan text-header"></i></button>
+                        <button id="menu-customer-details-btn" data-bs-toggle="modal" data-bs-target="#menu-customer-details-modal" class="btn border-header all-border"><i class="bi bi-person-lines-fill text-header"></i></button>
+                        <button id="order-comment-btn" data-bs-toggle="modal" data-bs-target="#order-comment-modal" class="btn border-header all-border"><i class="bi bi-chat-left-text text-header"></i></button>
+                    </div>
+                </div>
+ 
+                <div class="item-details mt-3">
+                    <div class="container border-bottom border-2">
+                        <div class="row text-secondary fw-semibold">
+                            <div class="col-6">Item</div>
+                            <div class="col">Quantity</div>
+                            <div class="col">Amount</div>
+                            <div class="col"></div>
+                        </div>
+                    </div>
+ 
+                    <div class="accordion mt-2 " id="order-items">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            string uniqueModifierIdentifier = "";
+                            @foreach(var modifier in item.OrderModifiers.OrderBy(m => m.ModifierId)){
+                                uniqueModifierIdentifier += modifier.Id;
+                            }
+                            string uniqueId = item.Id+"-"+uniqueModifierIdentifier;
+ 
+ 
+                            <div class="accordion-item order-item border-top mb-2" id="@uniqueId-item" data-id="@item.Id" data-item-tax="@item.TaxPercentage" data-item-id="@item.ItemId" data-rate="@item.Price" data-modifiers-total="@item.TotalModifierAmount">
+                                <div class="accordion-header p-1 shadow-sm">
+                                    <div class="row align-items-center">
+                                        <div class="col-6 ">
+                                            <div class="d-flex gap-2 w-100 p-1" data-bs-toggle="collapse"
+                                                data-bs-target="#@uniqueId-collapse" aria-expanded="true" type="button">
+                                                <div class="align-content-center">
+                                                    <button class="accordion-button collapsed p-0 bg-white border-0"
+                                                        type="button" data-bs-toggle="collapse"
+                                                        data-bs-target="#@uniqueId-collapse" type="button">
+ 
+                                                    </button>
+                                                </div>
+                                                <div type="button" class="fw-semibold text-capitalize col orderItemName" data-id="@item.Id"  data-bs-toggle="modal" data-bs-target=#@item.Id>
+                                                    @item.Name
+                                                </div>
+                                                <div class="modal fade" id="@item.Id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                                                        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Special Instruction</h1>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <div class="col mb-2">
+                                                                            <div class="form-floating">
+                                                                                <textarea id="item-comment-@item.Id"  class="form-control" placeholder="Comment"
+                                                                                    style="height: 100px;"></textarea>
+                                                                                <label for="item-comment-@item.Id">Comment</label>
+                                                                            </div>
+                                                                        </div>
+                                
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" data-id="@item.Id" class="btn btn-primary save-iten-btn" data-bs-dismiss="modal">Save</button>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    </div>
+                                                                </div>
+                                                                </div>
+                                                </div>
+                                            </div>
+                                            <div id="@uniqueId-collapse" class="accordion-collapse collapse">
+                                                <div class="accordion-body py-0">
+                                                    <ul class=" ps-1 m-0 text-secondary" id="item-modifiers">
+                                                        @foreach (var modifier in item.OrderModifiers)
+                                                        {
+                                                            <li class="item-modifier" data-id="@modifier.ModifierId"><small>@modifier.Name &emsp; Rs. <span class="item-modifier-rate">@modifier.Price</span></small></li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="quantity-btn border-secondary rounded-1 border" style>
+                                                <div class="input-group d-flex align-items-center justify-content-between ">
+                                                    <span class="input-group-btn">
+                                                        <button type="button"
+                                                            class="quantity-left-minus btn btn-number p-1 h-100" data-id="@uniqueId"
+                                                            data-type="minus">
+                                                            <i class="bi bi-dash-lg"></i>
+                                                        </button>
+                                                    </span>
+                                                    <div>
+                                                        <span type="text" id="@uniqueId-quantity" class="quantity"
+                                                            class="form-control input-number border-0 p-0">@item.Quantity</span>
+                                                    </div>
+                                                    <span class="input-group-btn">
+                                                        <button type="button"
+                                                            class="quantity-right-plus btn btn-number h-100 p-1" data-id="@uniqueId"
+                                                            data-type="plus" data-max="">
+                                                            <i class="bi bi-plus-lg "></i>
+                                                        </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">Rs. <span class="item-total">@item.ItemTotal.ToString("N2")</span> <br> <small class="text-secondary">Rs. <span class="item-modifiers-total">@(item.TotalModifierAmount.GetValueOrDefault().ToString("N2"))</span></small></div>
+                                        <div class="col">
+                                            <button class="btn remove-order-item-btn">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+ 
+                </div>
+ 
+                <div class="tax-details mt-3">
+                    <div class="d-flex justify-content-between">
+                        <h5>SubTotal </h5> <span class="fs-5">Rs. <span id="order-subtotal">@Model.SubTotal.ToString("N2")</span></span>
+                    </div>
+                    @* <div class="d-flex justify-content-between">Item Tax  <span>Rs. <span id="item-tax-amount" class="tax-amount">0</span></span></div> *@
+                    <div class="default-tax">
+                        @foreach(var tax in Model.OrderTaxes){
+                            <div class="d-flex justify-content-between order-tax" data-id="@tax.Id" data-type="@tax.Type" data-rate="@tax.Rate">@tax.Name  <span>Rs. <span class="tax-amount">@tax.TotalTax.GetValueOrDefault().ToString("N2")</span></span></div>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <h5>Total </h5> <span class="fs-5">Rs. <span id="order-total">@Model.TotalAmount.ToString("N2")</span></span>
+                    </div>
+                </div>
+ 
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>Payment Method</div>
+                    <div class="d-flex align-items-center gap-2 text-secondary">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment-method" id="radioCash" value="cash"
+                                role="button" checked>
+                            <label class="form-check-label" for="radioCash">
+                                Cash
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment-method" id="radioUPI" value="upi"
+                                role="button">
+                            <label class="form-check-label" for="radioUPI">
+                                UPI
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment-method" id="radioCard" value="card"
+                                role="button">
+                            <label class="form-check-label" for="radioCard">
+                                Card
+                            </label>
+                        </div>
+                    </div>
+                </div>
+ 
+                <div class="row gap-2 justify-content-end mt-3 last-btn-class" data-order-id="@Model.Id">
+                    @{
+                        var temp = (Model.OrderStatus == "Completed" || Model.OrderStatus == "Served") ? "disabled": "";
+                        var temp2 = Model.OrderStatus == "Completed" ? "" : "disabled";
+                    }
+                    <button id="save-order-btn" data-status="@Model.OrderStatus" class="btn rounded-0 login-btn  col-3" disabled>Save</button>
+ 
+                    <button id="complete-order-btn" class="btn rounded-0  col-3" @(Model.OrderStatus != "Served" ? "disabled": "" )>Complete</button>
+ 
+                    <button id="generate-invoice-btn" class="btn rounded-0  col-3 " @temp2>Generate Invoice</button>
+ 
+                    <button id="cancel-order-btn" class="btn rounded-0  col-3" @temp>Cancel</button>
+
+                </div>
+ 
+            </div>
+        </div>
+    </div>
+</div>

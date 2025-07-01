@@ -1,0 +1,209 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.WaitingTokenList>
+
+ <table class="table table-hover" >
+
+    <thead class=" text-center border-dark bg-white position-sticky top-0">
+
+        <tr>
+
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">No Of Person</th>
+            
+        </tr>
+
+    </thead>
+
+    <tbody class="text-center scroll-y-auto">
+
+        @{
+            int counter = 1;
+        }
+
+        @if(Model.ToList().Count != 0)
+        { 
+         
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="d-flex gap-2">
+                        <div class="form-check">
+                            <input class="form-check-input border border-secondary radio-for-details" data-token="@item.Id" data-id="@item.CustomerId" type="radio" name="radioDefault" id="radioDefault1">                         
+                        </div>
+                        @counter
+                    </td>
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        @item.NoOfPerson
+                    </td>
+                </tr>
+
+                counter++;
+            }
+        
+        }
+        else
+        {
+            <tr><td colspan="6">No Records Found</td></tr>
+        }
+        
+    </tbody>
+            
+</table>
+
+<div>
+    <span> Customer Details </span>
+
+    <div class="container-fluid customer-waitingList">
+
+        <div class="row">
+
+            <div class="col-md-12">
+                <div class="form-floating my-3">
+                    <input type="email" class="form-control" id="Emails">
+                    <label for="Email">Email</label>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="Names" disabled>
+                    <label for="Name">Name</label>
+                </div>
+            </div>
+
+            
+            <div class="col-md-12">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="Phones" disabled>
+                    <label for="Phone">Phone</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="NoOfPersons" disabled>
+                    <label for="NoOfPerson">NoOfPerson</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <select  class="form-select" name="section" id="sections" disabled>      
+                    </select>
+                    <label for="RoleId">Section</label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="login-btn p-2 rounded assign-table-btn"  data-bs-dismiss="offcanvas" disabled>Assign</button>
+            </div>
+
+           
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    $(".radio-for-details").change(function () {
+
+        var customerId = $(this).data("id")
+        var tokenId = $(this).data("token")
+
+        $.ajax({
+            type: "GET",
+            url: `/Table/GetCustomer`,
+            dataType: "JSON",
+            data: { customerId },
+            success: function (response) {
+
+                console.log("response" , response)
+
+                $(".assign-table-btn").prop("disabled" , false);
+                $(".assign-table-btn").attr("data-id" , customerId);
+                $(".assign-table-btn").attr("data-tokenid" , tokenId);
+                $("#Emails").val(response.data.email)
+                $("#Emails").prop("disabled" , true)
+                $("#Names").val(response.data.name)
+                $("#Phones").val(response.data.phone)
+                $("#NoOfPersons").val(response.data.noOfPerson)
+                $("#sections").append($('<option>', { value: response.data.sectionName, text: response.data.sectionName}));
+
+            }
+        });
+    })
+
+    $("#Emails").change(function() {
+
+        var email = $("#Emails").val()
+
+        $.ajax({
+            type: "GET",
+            url: `/Table/GetCustomerByEmails`,
+            dataType: "JSON",
+            data: { email },
+            success: function (response) {
+
+                console.log("response" , response)
+
+                if(response.success)
+                {
+                    $(".assign-table-btn").prop("disabled" , false);
+                    $(".assign-table-btn").attr("data-id" , response.data.customerId);
+                    $(".assign-table-btn").attr("data-tokenid" , response.data.id);
+                    $("#Names").val(response.data.name)
+                    $("#Phones").val(response.data.phone)
+                    $("#NoOfPersons").val(response.data.noOfPerson)
+                    $("#sections").append($('<option>', { value: response.data.sectionName, text: response.data.sectionName}));
+                    
+                }
+            }
+        });
+    })
+
+
+    $(".assign-table-btn").click( function() {
+        var customerId = $(this).data("id");
+        var tokenId = $(this).data("tokenid");
+        var ids = Array.from(AssignTable);
+        var noOfPerson = parseInt($("#NoOfPersons").val());
+
+        console.log("noOfPerson" , noOfPerson)
+
+        if(total_capacity < noOfPerson)
+        {
+            toastr.error("Available seats Are Less than No of Person");
+            return;
+        }
+
+        console.log("tableId",ids)
+        console.log("customerId",customerId)
+        console.log("tokenid",tokenId)
+
+         $.ajax({
+            type: "POST",
+            url: `/WaitingList/AssignTable`,
+            data: { customerId , ids , tokenId},
+            success: function (response) {
+
+                console.log("response" , response)
+
+                if(response.success)
+                {
+                    $(".accordion-button.new").click()
+                    toastr.success("Table Asigned !!");
+                    window.location.href = `/orderappmenu/menu?id=${response.data}` 
+                }
+
+            }
+        });
+
+    })
+
+</script>

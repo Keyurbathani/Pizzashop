@@ -1,0 +1,228 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.ModifierListVM>;
+
+
+
+<div class="modal-dialog modal-dialog-centered modal-lg ">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5 text-secondary" id="exampleModalLabel">Select Existing Modifier</h1>
+            <button type="button" class="btn-close" data-bs-toggle="modal" aria-label="Close"
+                data-bs-target="#addGroupModal"></button>
+        </div>
+
+        <div class="modal-body">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="search" name="search-existing" id="search-existing" placeholder="Search"
+                        class="form-control border-end-0 col-6">
+                    <span class="input-group-text bg-white border-start-0">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                </div>
+
+            </div>
+
+            <table class="table table-hover  ">
+                <thead class=" text-center border-dark ">
+                    <tr>
+                        <th scope="col">
+                            <div class="form-check">
+                                <input class="form-check-input all-select-modifier-check" type="checkbox" value=""
+                                    id="flexCheckIndeterminate">
+                                <label class="form-check-label" for="flexCheckIndeterminate">
+                                    Name
+                                </label>
+                            </div>
+                        </th>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Rate</th>
+                        <th scope="col">Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody class="text-center">
+                    @foreach (var modifier in Model.PagedList)
+                    {
+                        <tr class="align-content-center">
+                            <td class="text-start ">
+                                <div class="form-check d-flex align-items-center ">
+                                    <input id="@modifier.Id" class="select-modifier-check form-check-input me-3"
+                                        type="checkbox" data-obj='{"id": "@modifier.Id", "name":"@modifier.Name"}'>
+                                    <div class="form-check-label" for="flexCheckDefault">
+                                        <span class="ms-2"> @modifier.Name</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @modifier.Unit
+                            </td>
+                            <td>
+                                @modifier.Rate
+                            </td>
+                            <td>
+                                @modifier.Quantity
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div id="existing-pagination">
+                <partial name="_Pagination" model="@Model.Pagination" />
+            </div>
+        </div>
+
+        <div class="modal-footer text-start">
+            <button id="add-selected-modifier-btn" type="button" class="btn btn-primary bg-header rounded-0">Add
+            </button>
+            <button type="button" class="btn rounded-0 border-dark me-3"
+                onclick="closeExistingModifierModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    console.log(modifierList)
+
+    $.each(modifierList, function (i, val) {
+        $(`#${val.id}.select-modifier-check`).attr("checked", true);
+        var isAllChecked = $('.select-modifier-check:checked').length == $('.select-modifier-check').length;
+        $(".all-select-modifier-check").prop("checked", isAllChecked)
+    });
+
+
+    $(".select-modifier-check").change(function () {
+        var isChecked = $(this).is(":checked");
+        var obj = $(this).data("obj");
+        var id = obj.id;
+        if (isChecked) {
+            modifierList = modifierList.filter(obj => obj.id != id);
+            modifierList.push(obj);
+        }
+        else {
+            modifierList = modifierList.filter(obj => obj.id != id);
+            console.log(modifierList)
+        }
+        var isAllChecked = $('.select-modifier-check:checked').length == $('.select-modifier-check').length;
+        $(".all-select-modifier-check").prop("checked", isAllChecked);
+    });
+
+    $(".all-select-modifier-check").change(function () {
+        var checked = $(this).is(":checked");
+        $(".select-modifier-check").prop("checked", checked);
+        $(".select-modifier-check").change()
+    })
+
+    var displaySelectedModifier = $("#display-selected-modifier");
+    var addSelectedModifierBtn = $("#add-selected-modifier-btn");
+
+    addSelectedModifierBtn.click(function () {
+        modifierList = [];
+
+        $('.select-modifier-check:checked').each(function (i, e) {
+            modifierList.push($(e).data("obj"));
+        });
+
+        var body = "";
+        $.each(modifierList, function (i, val) {
+            body += '<span data-id="' + val.id + '" class="rounded-pill text-nowrap bg-secondary-subtle px-2 py-1 fs-6 m-2">' + val.name + '<button type="button" class="btn remove-selected-modifier-btn" >X</button></span>';
+        });
+
+        displaySelectedModifier.html(body);
+
+        $(".modal").modal("hide");
+        $("#addGroupModal").modal("show");
+
+        $(".remove-selected-modifier-btn").click(function () {
+            console.log($(this))
+            var id = $(this).parent().data("id");
+            @* modifierList = removeItem(modifierList, id); *@
+            modifierList = modifierList.filter(obj => obj.id != id);
+            $(this).parent().remove();
+            console.log(modifierList)
+        })
+    });
+
+
+
+
+    function closeExistingModifierModal() {
+        $(".select-modifier-check").prop("checked", false);
+        $(".all-select-modifier-check").prop("checked", false);
+        @* $.each(modifierList, function (i, val) {
+            $(`#${val.id}`).prop("checked", true);
+            var isAllChecked = $('.select-modifier-check:checked').length == $('.select-modifier-check').length;
+            $(".all-select-modifier-check").prop("checked", isAllChecked)
+        }); *@
+        modifierList = []
+        $("#existing-modifiers-modal").modal("hide")
+
+    }
+
+    $("#existing-pagination #next-page-btn").click(function () {
+
+        page = @Model.Pagination.CurrentPage + 1;
+        console.log("nextPage ", page)
+        loadPagedExistingModifier();
+
+    });
+
+    $("#existing-pagination #prev-page-btn").click(function () {
+
+        page = @Model.Pagination.CurrentPage - 1;
+        console.log("prevPage ", page)
+        loadPagedExistingModifier();
+    })
+
+    $("#existing-pagination #pagesizelist").change(function () {
+        page = 1;
+        console.log("pagesizelist ", page)
+        loadPagedExistingModifier();
+    })
+
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    var searchchange = debounce(function () {
+        page = 1
+        @* console.log(searchchange) *@
+        loadPagedExistingModifier()
+    }, 200);
+
+    $("#search-existing").keyup(searchchange);
+
+
+
+
+    function loadPagedExistingModifier() {
+
+        var searchStringFor = $("#search-existing").val();
+        console.log(searchStringFor)
+        var pageSize = $("#existing-pagination #pagesizelist").val();
+
+
+        $.ajax({
+            type: "GET",
+            url: "/Menu/GetAllExistingModifiers",
+            data: { searchStringFor, page, pageSize },
+            success: function (response) {
+                existingModifierModal.html(response);
+                existingModifierModal.modal("show");
+                $("#search-existing").val(searchStringFor)
+                $("#search-existing").focus()
+
+            }
+        })
+
+
+    }
+
+
+</script>

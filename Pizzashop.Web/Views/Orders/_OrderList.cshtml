@@ -1,0 +1,82 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.OrderListVM>;
+
+<style>
+    .orange {
+        color: orange;
+    }
+</style>
+
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm">
+        <thead class="border-dark">
+            <th scope="col">Order<span class="sort ms-1" role="button" data-sortcolumn=""><img src="~/images/sort.png"
+                        alt="" width="20px"></span></th>
+            <th scope="col">Date<span class="sort ms-1" role="button" data-sortcolumn="date"><img
+                        src="~/images/sort.png" alt="" width="20px"></span></th>
+            <th scope="col">Customer<span class="sort ms-1" role="button" data-sortcolumn="customer"><img
+                        src="~/images/sort.png" alt="" width="20px"></span></th>
+            <th scope="col">Status</th>
+            <th scope="col">Payment Mode</th>
+            <th scope="col">Rating</th>
+            <th scope="col">Total Amount<span class="sort ms-1" role="button" data-sortcolumn="totalamount"><img
+                        src="~/images/sort.png" alt="" width="20px"></span></th>
+            <th scope="col">Action</th>
+        </thead>
+        <tbody>
+            @if (Model.PagedList.Any())
+            {
+
+                @foreach (var item in Model.PagedList)
+                {
+                    <tr>
+                        <td># @item.Order</td>
+                        <td>@item.Date</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.Status</td>
+                        <td>@item.PaymentMode</td>
+                        <td>
+                            <div class="star-rating">
+                                @if (item.Rating != null)
+                                {
+                                    <div class="star-rating-filled" style="width:@(item.Rating * 20)%;">
+                                        ★ ★ ★ ★ ★
+                                    </div>
+                                }
+                                <div class="star-rating-blank">
+                                    ★ ★ ★ ★ ★
+                                </div>
+                            </div>
+                            <span>(@item.Rating)</span>
+                        </td>
+
+                        <td>@item.Totalamount.GetValueOrDefault().ToString("N2")</td>
+                        <td>
+
+
+                            <a asp-action="OrderPrint" asp-route-id="@item.Order" class="text-secondary fs-4" target="_blank">
+                                <i class="fa-regular fa-file-pdf"></i>
+                            </a>
+                            <a asp-action="OrderDetails" asp-route-id="@item.Order" class="text-secondary fs-4">
+                                <i class="fa-regular fa-eye"></i>
+                            </a>
+
+                        </td>
+                    </tr>
+
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center" colspan="8">No Orders Found!</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div id="orders-pagination">
+    
+        <partial name="_Pagination" model="Model.Pagination" />
+    
+</div>

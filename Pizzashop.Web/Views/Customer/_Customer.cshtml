@@ -1,0 +1,96 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.CustomerListVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+<div class="tab-pane fade show active table-responsive" id="v-pills-sandwitch" role="tabpanel"
+    aria-labelledby="v-pills-sandwitch-tab" tabindex="0" style="height: 500px;">
+    
+
+       <span id="NotSeclected" class="text-danger fs-4"></span>
+
+        <table class="table table-hover" >
+            <thead class="border-dark bg-white position-sticky top-0">
+                <tr>
+                    <th scope="col">Name<span class="sort ms-1" role="button" data-sortcolumn="customer"><img src="~/images/sort.png" alt="" width="20px"></span></th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Date<span class="sort ms-1" role="button" data-sortcolumn="date"><img src="~/images/sort.png" alt="" width="20px"></span></th>
+                    <th scope="col">Total Order<span class="sort ms-1" role="button" data-sortcolumn="ordernumber"><img src="~/images/sort.png" alt="" width="20px"></span></th>
+                </tr>
+            </thead>
+
+            <tbody class="scroll-y-auto">
+
+                @if(Model.PagedList.ToList().Count != 0){ 
+
+                    @foreach (var item in Model.PagedList)
+                    {
+
+                     <tr id="customer-data" data-id="@item.Id">
+                        <td class="">
+                             <span class="ms-2"> @item.Name</span>
+                        </td>
+                        
+                        <td>
+                           @item.Email
+                        </td>
+                        <td>
+                           @item.Phone
+                        </td>
+                        <td>
+                           @item.Date
+                        </td>
+                        <td>
+                           @item.TotalOrder
+                        </td>
+ 
+                     </tr>
+
+                     <button type="button" id="customer_data_history" hidden class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customer-history">
+                        customer-history
+                    </button>
+
+                    }
+                
+                }
+                else
+                {
+                  <tr class="text-center"><td colspan="6">No Records Found</td></tr>
+                }
+                
+            </tbody>
+        </table>
+
+        
+
+            <div class="modal fade" id="customer-history" tabindex="-1"  aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Customer History</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                            <div id="customer_history">
+                                
+                            </div>
+      
+                    </div>
+                 </div>
+            </div>
+
+        
+ 
+
+
+</div>
+
+<div id="customers-pagination">
+    <partial name="_Pagination" model="Model.Pagination" />
+</div>
+
+
+

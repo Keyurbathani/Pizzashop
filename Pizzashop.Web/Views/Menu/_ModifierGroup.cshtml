@@ -1,0 +1,500 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.ModifierGroupVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+@* Select Existing Modifier Patrial Modal *@
+<div class="modal fade " id="existing-modifiers-modal" tabindex="-1" aria-labelledby="exampleModalLabel">
+
+</div>
+
+@* Add Modifier Group Modal *@
+<div class="modal fade" id="addGroupModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="add-group-form">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="group-title">
+                        <span>Add Modifier Group</span>
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        onclick="clearGroupModalData()"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="groupId">
+                    <div class="mb-2">
+                        <input type="text" name="name" id="groupName" class="form-control " placeholder="Name*"
+                            required>
+                    </div>
+                    <div class="mb-2">
+                        <textarea name="description" id="group-description" class="form-control mb-2"
+                            placeholder="Description"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <button id="add-existing-modifier" type="button" class="btn text-primary">+ Add Existing
+                            Modifiers</button>
+                    </div>
+                    <div id="display-selected-modifier">
+
+                    </div>
+                </div>
+                <div class="modal-footer ">
+                    <button type="submit" class="btn btn-primary bg-header rounded-0">Save </button>
+                    <button type="button" class="btn rounded-0 border-dark me-3" data-bs-dismiss="modal"
+                        onclick="clearGroupModalData()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Delete Confirmation Modal *@
+<div class="modal fade " id="delete-group-modal" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete Modifier Group?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-group-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@* Modifier Group *@
+<div class="row ">
+
+    <div class="sidebar2 border-end border-primary bg-white ms-3 modifier-group-list">
+
+        <div class="group-title d-flex align-items-center justify-content-between mt-2 ">
+
+            <span class="text-header fs-5">Modifier Groups</span>
+
+            <button type="button" role="button" class="add-group btn border-primary text-header fs-3 py-0"
+                data-bs-toggle="modal" data-bs-target="#addGroupModal" onclick="clearGroupModalData()">+
+            </button>
+
+        </div>
+
+        <div class="d-flex align-items-start w-100">
+
+            <div class="flex-md-column align-items-start d-flex flex-md-nowrap mt-3 w-100 modifier-group">
+
+                @foreach (var modifierGroup in Model)
+                {
+                    <div id="@modifierGroup.Id"
+                        class="d-flex align-items-center justify-content-between mb-2 modifier modifier-btn w-100">
+
+                        <button class="nav-link text-start d-flex align-items-center w-100" type="button">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                            <span class="icon nav-link text-dark ms-1 text-capitalize">
+                                @modifierGroup.Name    
+                            </span>
+                        </button>
+
+                        <div class="d-flex align-items-center action_btn utility-btn">
+                            <button
+                                onClick="setGroupModalData(`@modifierGroup.Id.ToString()`,`@modifierGroup.Name.ToString()`,`@modifierGroup.Description?.ToString()` )"
+                                class="btn nav-link active edit-btn"><i class="fa-solid fa-pencil"></i></button>
+                            <button data-id="@modifierGroup.Id" class="btn nav-link active delete-btn ms-2"><i
+                                    class="fa-solid fa-trash-can" data-bs-toggle="modal"
+                                    data-bs-target="#delete-group-modal"></i></button>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        </div>
+
+
+    </div>
+
+
+    @* Modifiers *@
+    <div class="col bg-white me-3">
+        <div class="p-1">
+            <div class="modifiers-title">
+                <h4 class="text-header">
+                    <span class="item-header">Modifiers</span>
+
+                    <div class="dropdown d-md-none">
+
+                        <button class="btn fs-3 dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Modifiers
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <div class="category-title d-flex align-items-center justify-content-between mt-2">
+
+                                <h4 class="text-header">
+                                    <span class="fs-5">Modifiers Group</span>
+                                </h4>
+
+                                @if (canEdit)
+                                {
+
+                                    <button type="button" role="button"
+                                        class="add-group btn border-primary text-header fs-3 py-0" data-bs-toggle="modal"
+                                        data-bs-target="#addGroupModal" onclick="clearGroupModalData()">+
+                                    </button>
+                                }
+
+                            </div>
+
+                            @foreach (var modifierGroup in Model)
+                            {
+                                <div id="@modifierGroup.Id"
+                                    class="d-flex align-items-center justify-content-between mb-2  modifier modifier-btn dropdown-item">
+
+                                    <button class="nav-link text-start d-flex align-items-center" type="button">
+                                        <i class="fa-solid fa-grip-vertical"></i>
+                                        <span class="icon nav-link text-dark ms-1 text-capitalize">
+                                            @modifierGroup.Name
+                                        </span>
+                                    </button>
+
+                                    <div class="d-flex align-items-center action_btn utility-btn">
+                                        <button
+                                            onClick="setGroupModalData(`@modifierGroup.Id.ToString()`,`@modifierGroup.Name.ToString()`,`@modifierGroup.Description?.ToString()` )"
+                                            class="btn nav-link active edit-btn"><i class="fa-solid fa-pencil"></i></button>
+                                        <button data-id="@modifierGroup.Id" class="btn nav-link active delete-btn ms-2"><i
+                                                class="fa-solid fa-trash-can" data-bs-toggle="modal"
+                                                data-bs-target="#delete-group-modal"></i></button>
+                                    </div>
+
+                                </div>
+                            }
+
+                        </ul>
+
+                    </div>
+
+                </h4>
+
+                <div class="d-flex gap-2 m-2 justify-content-end align-items-center ">
+
+                    <div class="input-group w-25">
+                        <input name="search-modifier " id="search-modifier" placeholder="Search"
+                            class="form-control border-end-0">
+                        <span class="input-group-text bg-white border-start-0">
+                            <i class="fa-solid fa-search"></i>
+                        </span>
+                    </div>
+
+                    <button id="delete-multiple-modifiers" class="btn border d-none" role="button" type="button">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                    <button id="add-modifier-btn" type="button"
+                        class="btn btn-primary py-2 px-3 text-decoration-none rounded-2 bg-header text-white ms-1 text-nowrap">
+                        <span> + New Modifier</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="data-table-modifier" class="data-table"></div>
+
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Add New Modifier Menu Modal -->
+<div class="modal fade" id="add-modifier-modal" tabindex="-1" aria-labelledby="exampleModalLabel">
+
+</div>
+
+
+<script>
+
+    var loadTable = $("#data-table-modifier");
+    var addModifierModal = $("#add-modifier-modal");
+    var modifierList = [];
+    var modifiersToDelete = [];
+
+    @* Select Modifier Group Active Class  *@
+        $(".modifier").first().addClass("active-new");
+    $(".modifier").click(function () {
+        $(".modifier").removeClass("active-new");
+        $(this).addClass("active-new");
+    });
+
+    @* Load Data On first time page load  *@
+        $.ajax({
+            type: "GET",
+            url: "/Menu/GetModifiersByModifierGroupPaged",
+            success: function (response) {
+                loadTable.html(response);
+            }
+        })
+
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    var searchchange = debounce(function () {
+        page = 1
+        loadPagedModifier()
+    }, 200);
+
+    $("#search-modifier").keyup(searchchange);
+
+
+
+    @* Add Event Listner to Modifer Group buttons to load relevent table  *@
+
+
+
+
+    @* Validation for ADD/EDIT Modifier Group  *@
+        $.validator.addMethod('notContain', function (val, element, params) {
+            return !val.includes(params);
+        });
+
+    var validator = $("#add-group-form").validate({
+        rules: {
+            name: {
+                required: true,
+                minlength: 3,
+                notContain: '`'
+            },
+            description: {
+                notContain: '`'
+            }
+        },
+        messages: {
+            name: {
+                required: "Please enter Modifier group name",
+                minlength: "Modifier Group name must be at least 3 characters long",
+                notContain: "Should not contain `"
+            },
+            description: {
+                notContain: "Should not contain `"
+            }
+        },
+        highlight: function (element) {
+            $(element).parent().addClass('error ')
+        },
+        unhighlight: function (element) {
+            $(element).parent().removeClass('error')
+        },
+    });
+
+    $('#add-group-form').one('keyup', function () { $(this).valid(); });
+
+    @* Add/Edit Modifier Group  *@
+        $("#add-group-form").submit(function (e) {
+            e.preventDefault();
+            if (!$(this).valid()) {
+                return;
+            }
+            var formdata = {
+                model: {
+                    name: $("#groupName").val(),
+                    description: $("#group-description").val(),
+                },
+                modifierIds: modifierList.map(modifier => modifier.id)
+            }
+
+            var id = $("#groupId").val()
+            if (id.length != 0) {
+                formdata.model.id = id;
+                submitGroupData("EditModifierGroup", formdata)
+            }
+            else {
+                submitGroupData("AddModifierGroup", formdata)
+            }
+            $("#addGroupModal").modal("hide");
+        })
+
+    @* Delete Modifier Group  *@
+        $("#delete-group-btn").click(function () {
+            var id = $(this).attr("id");
+            submitGroupData("DeleteModifierGroup", { "id": id })
+        })
+
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-group-btn").attr("id", id);
+    })
+
+
+    @* Add Modifier  *@
+        $("#add-modifier-btn").on('click', function (e) {
+            e.preventDefault();
+            loadGroupData("GetModifierById", addModifierModal).done(() => {
+                addModifierModal.modal("show");
+            });
+        })
+
+
+    var existingModifierModal = $("#existing-modifiers-modal");
+
+    $("#add-existing-modifier").click(function () {
+
+
+        loadPagedExistingModifier()
+
+        $("#addGroupModal").modal("hide");
+
+    });
+
+    var displaySelectedModifier = $("#display-selected-modifier");
+
+
+
+
+    @* Function  *@
+
+        function setGroupModalData(id, name, description) {
+
+            clearGroupModalData();
+
+            var modal = $("#addGroupModal");
+            modal.find("#groupId").val(id);
+            modal.find("#groupName").val(name);
+            modal.find("#group-description").val(description);
+            modal.find("#group-title").text("Edit Modifier Group");
+
+            $.ajax({
+                type: "GET",
+                url: "/Menu/GetModifierDetailsByModifierGroup",
+                data: { id },
+                success: function (response) {
+                    if (response.success) {
+                        data = response.data;
+                        var body = "";
+                        modifierList = [];
+
+                        $.each(data, function (i, val) {
+                            modifierList.push({ id: val.id, name: val.name });
+                            body += '<span data-id="' + val.id + '" class="rounded-pill text-nowrap bg-secondary-subtle px-2 py-1 fs-6 m-2">' + val.name + '<button type="button" class="btn remove-selected-modifier-btn">X</button></span>';
+                        })
+                        displaySelectedModifier.html(body);
+
+                        $(".remove-selected-modifier-btn").click(function () {
+                            var id = $(this).parent().data("id");
+                            modifierList = modifierList.filter(obj => obj.id != id);
+                            $(this).parent().remove();
+                            console.log(modifierList)
+                        })
+                    }
+                    else {
+                        toastr.error("Something went wrong!");
+                        return;
+                    }
+                }
+            });
+
+            modal.modal("show");
+        }
+
+    function clearGroupModalData() {
+        var modal = $("#addGroupModal");
+        modal.find("form")[0].reset();
+        modifierList = [];
+        validator.resetForm();
+        $("#display-selected-modifier").empty()
+        modal.find("#group-title").text("Add Modifier Group");
+    }
+
+
+    @* Hepler Functions of AJAX  *@
+        function submitGroupData(action, formdata) {
+            return $.ajax({
+                type: "POST",
+                url: `/Menu/${action}`,
+                data: formdata,
+                success: function (data) {
+                  
+                    if (data.success) 
+                    {                        
+                        toastr.success(data.message);
+                        console.log(data.id)
+                        loadDataForModifierGroup("GetModifierGroups", data.id)
+                    }
+                    else {
+                        toastr.error(data.message)
+                    }
+
+                },
+                
+                error: function () {
+                    toastr.error('Something went wrong !!');
+                }
+            })
+        }
+
+        function loadDataForModifierGroup(action, id) {
+            $.ajax({
+                type: "GET",
+                url: `/Menu/${action}`,
+                success: function (data) {
+
+                    $("#modifier-group").html(data);
+                    $("#"+id).click()
+
+                }
+            })
+        }
+
+    function loadGroupData(action, element, id) {
+        return $.ajax({
+            type: "GET",
+            url: `/Menu/${action}`,
+            data: { "id": id },
+            success: function (data) {
+                element.html(data);
+            }
+        });
+    }
+
+    $(".modifier").click(function () {
+        page = 1;
+        $("#search-modifier").val('');
+        loadPagedModifier();
+    });
+
+    function loadPagedExistingModifier() {
+
+        var searchString = $("#search-existing").val();
+        var pageSize = $("#existing-pagination #pagesizelist").val();
+
+        $.ajax({
+            type: "GET",
+            url: "/Menu/GetAllExistingModifiers",
+            data: { searchString, page, pageSize },
+            success: function (response) {
+                existingModifierModal.html(response);
+                existingModifierModal.modal("show");
+            }
+        })
+    }
+
+
+
+
+</script>

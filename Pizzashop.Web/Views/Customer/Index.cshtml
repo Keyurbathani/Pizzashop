@@ -1,0 +1,322 @@
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Customers";
+}
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+
+@* TITLE *@
+<div class="container-fluid">
+
+    <div class="title d-flex justify-content-between align-items-center header-search">
+
+        <h2 class="text-header mb-3">Customers</h2>
+
+        <div class="d-flex justify-content-end my-2 header-filter">
+
+            <div class="input-group w-50">
+                <input type="search" name="searchString" id="search-customers" placeholder="Search"
+                    class="form-control border-end-0">
+                <span class="input-group-text bg-white border-start-0">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 header-filter ms-2 w-50">
+
+
+                <select id="order-time" name="pastDays" class="form-select w-75" aria-label="Default select example">
+                    <option selected value="all">All Time</option>
+                    <option value="1">Today</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="month">Current Month</option>
+                    <option value="customdate">Custom Date</option>
+                    <option value="" hidden>Custom Date</option>
+                </select>
+
+                <button type="button" hidden class="btn btn-primary" id="custom_date" data-bs-toggle="modal"
+                    data-bs-target="#customdate-modal">
+                    Custom Date
+                </button>
+
+                <div class="modal fade " id="customdate-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                    <span>Select Date Range</span>
+                                </h1>
+                                <button type="button" class="btn-close clear-btn-customer" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="post" id="date-search">
+                                <div class="modal-body text-center">
+                                    <div class="d-flex  gap-2 my-3">
+
+
+
+                                        <div class="form-floating w-50">
+                                            <input type="date" name="fromDate" id="fromDate" class="form-control"
+                                                placeholder="Start Date">
+                                            <label for="fromDate">From Date</label>
+                                        </div>
+
+                                        <div class="form-floating w-50">
+                                            <input type="date" name="toDate" id="toDate" class="form-control"
+                                                placeholder="End Date">
+                                            <label for="toDate">To Date</label>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                                <div class="text-center mb-3">
+                                    <button id="search-btn" type="submit"
+                                        class="btn btn-primary py-2 px-3 text-decoration-none rounded-1 bg-header text-white ms-1 text-nowrap"
+                                        data-bs-dismiss="modal">
+                                        Search
+                                    </button>
+
+                                    <button id="" type="reset"
+                                        class="clear-btn-customer btn border-primary rounded-0 text-primary py-2 px-3 text-decoration-none rounded-1 mx-2 text-nowrap"
+                                        data-bs-dismiss="modal">
+                                        Clear
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                <button id="export-customer-btn"
+                    class="btn btn-primary py-2 px-3 text-decoration-none rounded-1 bg-header text-white text-nowrap export-normal">
+                    <i class="fa-solid fa-share-from-square me-1"></i>
+                    <span> Export</span>
+                </button>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="col bg-white me-3">
+        <div class="p-1">
+            <div id="customer-partial" class="mt-2">
+                @* customers table *@
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+@section Scripts {
+
+
+    <script>
+
+        var page = 1, pagesize = 5, searchString = "", sortColumn = "", isAsc = true, fromDate = "", toDate = "";
+
+        function getCustomers() {
+            $.ajax({
+                type: "GET",
+                url: "/Customer/GetPagedCustomers",
+                data: { page, pagesize, searchString, sortColumn, isAsc, fromDate, toDate },
+                success: function (response) {
+                    $("#customer-partial").html(response);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+
+            getCustomers();
+
+            function debounce(func, delay) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            }
+
+            $("#search-customers").keyup(debounce(function () {
+                page = 1;
+                searchString = $(this).val();
+                getCustomers();
+            }, 300));
+
+        var today = new Date().toISOString().split("T")[0];
+            $("#fromDate").attr("max", today)
+            $("#toDate").attr("max", today)
+
+            $("#fromDate").change(function () {
+            var date = $(this).val();
+            $("#toDate").attr("min", date);
+            });
+
+            $("#toDate").change(function () {
+            var date = $(this).val();
+            $("#fromDate").attr("max", date);
+            });
+
+
+                $("#order-time").change(function () {
+                    var pastDay = $(this).val();
+                    var date = new Date();
+                    if (pastDay === "all") {
+                        fromDate = "";
+                        toDate = "";
+                        getCustomers();
+                        return;
+                    }
+                    else if (pastDay === "month") {
+                        fromDate = new Date(date.getFullYear(), date.getMonth(), 2);
+                        toDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+                    }
+                    else if (pastDay === "customdate") {
+                        $(this).val("")
+                        $("#custom_date").trigger("click")
+                        return;
+                    }
+                    else {
+                        fromDate = new Date();  
+                        fromDate.setDate(fromDate.getDate() - parseInt(pastDay) + 1);
+                        toDate = new Date();
+                        toDate.setDate(toDate.getDate() + 1)
+
+                        @* console.log("fromDate" ,fromDate )
+                        console.log("toDate" , toDate) *@
+                    }
+
+                    fromDate = fromDate.toISOString().split('T')[0];
+                    toDate = toDate.toISOString().split('T')[0];
+
+                    getCustomers();
+
+                })
+
+            $("#date-search").submit(function (e) {
+
+                e.preventDefault();
+                fromDate = $("#fromDate").val();
+                toDate = $("#toDate").val();
+
+                getCustomers();
+            })
+
+            $(".clear-btn-customer").click(function () {
+                fromDate = "";
+                toDate = "";
+                $("#order-time").val("all");
+                getCustomers();
+            })
+
+
+            // Sorting
+
+            $(document).on("click", ".sort", function () {
+                var newSortColumn = $(this).data("sortcolumn");
+
+                if (newSortColumn == sortColumn) {
+                    isAsc = !isAsc;
+                }
+                else {
+                    isAsc = true;
+                }
+                sortColumn = newSortColumn;
+                getCustomers();
+            })
+
+
+            // CUSTOMER DATA
+            $(document).on("click", "#customer-data", function () {
+
+                var id = $(this).data("id")
+                console.log("customer id :", id)
+
+
+                $.ajax({
+                    type: "GET",
+                    url: "/Customer/GetCustomerHistory",
+                    data: { id },
+                    success: function (response) {
+                        $("#customer_data_history").trigger("click")
+                        $("#customer_history").html(response);
+                    },
+                    error: function (response) {
+
+                        console.log(response)
+                    }
+                });
+
+            })
+
+
+
+            // Pagination
+
+            $(document).on("change", "#customers-pagination #pagesizelist", function () {
+
+                pagesize = $(this).val();
+                page = 1
+
+                getCustomers();
+
+            });
+
+
+            // ExportCustomer
+            $("#export-customer-btn").on("click", function () {
+                let searchString = $("#search-customers").val();
+                let pastDays = $("#order-time").val();
+                let fromDate = $("#fromDate").val();
+                let toDate = $("#toDate").val();
+
+
+                if (pastDays === "customdate") {
+                    pastDays = "customdate";
+                }
+
+                let url = `/Customer/ExportCustomers?pastDays=${encodeURIComponent(pastDays)}&searchString=${encodeURIComponent(searchString)}`;
+
+                // Add date parameters if they exist
+                if (fromDate && toDate) {
+                    url += `&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`;
+                }
+
+                window.location.href = url;
+                toastr.success("Customers Exported Successfully");
+
+            });
+        });
+
+        function prevPage() {
+            page--;
+            getCustomers();
+        }
+        function nextPage() {
+            page++;
+            getCustomers();
+        }
+
+    </script>
+
+}

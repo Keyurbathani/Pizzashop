@@ -1,0 +1,116 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.SectionVM>;
+
+
+@{
+    ViewData["title"] = "WaitingList";
+    Layout = "_OrderAppLayout";
+}
+
+<div class="container-fluid h-100">
+
+    <div class="d-flex justify-content-between align-items-center pt-3">
+
+        <span class="header-name fs-3">
+            Waiting List
+        </span>
+
+        <button type="button"
+            class="add-item-btn btn btn-primary py-2 px-3 text-decoration-none rounded-2 bg-header text-white ms-1 text-nowrap">
+            + Waiting Token
+        </button>
+
+    </div>
+
+    <div class="d-flex flex-wrap gap-4 align-items-center shadow p-2 bg-white mt-3 rounded">
+
+        <div class="ms-2 fs-5 section text-secondary d-flex align-items-center gap-1"> All
+            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                style="height: 25px; width: 25px;">
+                <span class="allCount text-dark"></span>
+            </div>
+        </div>
+
+        @foreach (var sections in Model)
+        {
+            <div data-id="@sections.Id" id="@sections.Name"
+                class="fs-5 text-secondary text-capitalize section d-flex align-items-center gap-1">
+                @sections.Name
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                    style="height: 25px; width: 25px;">
+                    <span class="getCount text-dark">@sections.TokenCount</span>
+                </div>
+            </div>
+
+
+        }
+
+
+    </div>
+
+
+    <div class="mt-3 shadow">
+        <div id="list-partial">
+        </div>
+    </div>
+
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        var allCount = 0;
+        $(".getCount").each(function () {
+            allCount = allCount + parseInt($(this).text())
+        })
+
+        $(".allCount").html(allCount)
+
+        function updateLiveTimes() {
+            $('.live-time').each(function () {
+                const orderTime = new Date($(this).data('order-time'));
+                const now = Date.now();
+                const diff = Math.floor((now - orderTime) / 1000);
+                const days = Math.floor(diff / 86400);
+                const hours = Math.floor((diff % 86400) / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                $(this).text(`${days}D ${hours}H ${minutes}M ${seconds}S`);
+            });
+        }
+
+        setInterval(updateLiveTimes, 1000)
+
+        $(".section").first().addClass("clicked");
+        $(".section").click(function () {
+            $(".section").removeClass("clicked");
+            $(this).addClass("clicked");
+        });
+
+
+        // Load Data On first time page load  
+        var sectionId = $(".section.clicked").data("id");
+        $.ajax({
+            type: "GET",
+            url: "/WaitingList/GetAllWaitingTokensBySection",
+            data: { sectionId },
+            success: function (response) {
+                $("#list-partial").html(response);
+                updateLiveTimes();
+            }
+        })
+
+        $(".section").click(function () {
+
+            loadPagedItems();
+
+        });
+
+        
+
+
+    </script>
+
+}

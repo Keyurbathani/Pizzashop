@@ -1,0 +1,159 @@
+@model Pizzashop.Entity.ViewModels.WaitingTokenList;
+
+@{
+    bool IsAdd = (Model?.Id ?? 0) == 0;
+}
+
+<div class="modal-dialog modal-dialog-centered">
+
+    <form id="add-item-form">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Waiting Token Details</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <input type="hidden" asp-for="CustomerId">
+
+                    <div class="col-md-12 mb-3">
+                        <input asp-for="Email" id="Emailfor" placeholder="Email*" class="form-control py-3 ">
+                        <span asp-validation-for="Email" class="text-danger ms-2"></span>
+
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <input asp-for="Name" id="Namefor" placeholder="Name*" class="form-control py-3 ">
+                        <span asp-validation-for="Name" class="text-danger ms-2"></span>
+
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <input asp-for="Phone" id="Phonefor" placeholder="Phone*" class="form-control py-3 ">
+                        <span asp-validation-for="Phone" class="text-danger ms-2"></span>
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input asp-for="NoOfPerson" id="NoOfPersonfor" placeholder="No Of Person*"
+                            class="form-control py-3 ">
+                        <span asp-validation-for="NoOfPerson" class="text-danger ms-2"></span>
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class=" form-floating " id="sectionsfor">
+                            <select id="dd-category" role="button" class="form-select section-select"
+                                asp-for="SectionId">
+                                <option disabled selected>Select Section</option>
+                            </select>
+                            <label asp-for="SectionId" class="">Section</label>
+                        </div>
+                        <span asp-validation-for="SectionId" class="text-danger ms-2"></span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer ">
+                <button type="submit"  class="btn btn-primary bg-header rounded-0">Save</button>
+                <button type="button" class="btn rounded-0 border-dark me-3" data-bs-dismiss="modal">Cancel</button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+
+<script>
+
+    var modal = $("#addNewModal");
+
+    $("#Emailfor").change(function () {
+
+        console.log("Done in add")
+
+        var email = $("#Emailfor").val()
+
+        $.ajax({
+            type: "GET",
+            url: `/Table/GetCustomerByEmails`,
+            dataType: "JSON",
+            data: { email },
+            success: function (response) {
+
+                console.log(response)
+
+                if (response.success) {
+                    $("#Namefor").val(response.data.name)
+                    $("#Phonefor").val(response.data.phone)
+                    $("#NoOfPersonfor").val(response.data.noOfPerson)
+
+                }
+
+
+            }
+        });
+    })
+
+    $("form").submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        var formData = new FormData(form[0])
+        var action = null;
+
+        action = "CreateTokens";
+
+        $.ajax({
+            type: "POST",
+            url: "/Table/" + action,
+            dataType: "JSON",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+
+                if (data.success) {
+                    toastr.success(data.message);
+                    modal.modal("hide");
+                    $(".section.clicked").click()
+                }
+                else {
+                    toastr.error(data.message)
+                }
+
+            },
+            error: function (response) {
+                modal.html(response.responseText)
+            }
+        });
+    });
+
+    $.ajax({
+        type: "GET",
+        url: "/Section/BindData",
+        success: function (response) {
+
+            var sectionId = $(".section.clicked").data("id");
+            var ddCategory = $("#dd-category");
+
+            ddCategory.empty().append('<option disabled selected>Select Section</option>');
+            $.each(response.sections, function () {
+                ddCategory.append($("<option></option>").val(this['value']).attr("selected", "@Model?.SectionId" == this['value']).html(this['text']));
+                if (sectionId != undefined) {
+                    ddCategory.val(sectionId)
+                }
+            });
+
+        }
+    })
+
+</script>

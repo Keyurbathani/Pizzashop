@@ -1,0 +1,495 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.WaitingTokenList>
+
+
+ @* Delete/Cancel Token  *@
+<div class="modal fade " id="delete-token-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Cancel Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Cancel the Waiting Token ?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-token-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Assign Table modal *@
+<div class="modal fade " id="assign-table-modal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Assign Table</span>
+                </h1>
+                <button type="button" class="btn-close assign-table-cancel" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <div class="container">
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="  form-floating ">
+                                <select id="dd-section" role="button" class="form-select section-select">
+                                    <option disabled selected>Select Section</option>
+                                </select>
+                                <label>Section</label>
+                            </div>
+                           
+                        </div>
+
+                       <div class="col-md-6">
+                            <div class="form-floating mb-sm-2">
+                                <div class="dropdown w-100 ">
+                                    <button class="btn form-control dropdown-toggle w-100 text-start border-dark py-3"
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Select Table
+                                    </button>
+                                    <ul id="dd-table" class="dropdown-menu w-100" aria-labelledby="multiSelect">
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="col-md-12">
+                             <div id="selected-tables" class="mb-2 text-primary"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="text-center mb-3">
+                <a  type="button" class="assign-table-list btn btn-primary bg-header me-2 rounded-0 px-3">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3 assign-table-cancel"
+                        data-bs-dismiss="modal">No</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="table-responsive">
+
+    <table class="table table-hover rounded" >
+
+        <thead class=" text-center border-dark bg-white position-sticky top-0">
+
+            <tr>
+                <th scope="col"># Token No</th>
+                <th scope="col">Created At</th>
+                <th scope="col">Waiting Time</th>
+                <th scope="col">Name</th>
+                <th scope="col">No Of Person</th>
+                <th scope="col">Phone Number</th>
+                <th scope="col">Email</th>
+                <th scope="col" class="text-start">Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody class="text-center scroll-y-auto">
+
+            @if(Model.ToList().Count != 0)
+            { 
+
+                <span id="record-count" hidden>@Model.ToList().Count</span>
+
+                @foreach (var item in Model)
+                {
+                    <span id="sectionId" hidden class="bg-danger">@item.SectionId</span>
+
+                    <tr>
+                        
+                        <td>@item.Id</td>
+                        <td>@item.CreatedAt</td>
+                        <td><span class="live-time" data-order-time="@item.CreatedAt.ToString("O")"></span></td>
+                        <td>@item.Name</td>
+                        <td>@item.NoOfPerson </td>
+                        <td>@item.Phone</td>
+                        <td>@item.Email</td>
+                        
+                        <td class="text-center d-flex align-items-center">
+
+                            <a role="button" type="button" class="edit-item-btn nav-link me-2 fs-5" data-id="@item.Id">
+                                <i class="fa-solid fa-pencil"></i>
+                            </a>
+
+                            <a data-id="@item.Id"  class="delete-btn nav-link me-2 fs-5">
+                                <i class="fa-solid fa-trash" data-bs-toggle="modal" data-bs-target="#delete-token-modal"></i>
+                            </a>
+
+                            <a data-id="@item.CustomerId" data-token="@item.Id" data-section="@item.SectionId" data-person="@item.NoOfPerson"   class="assign-table-list-btn nav-link fs-5">
+                                <i class="fa-solid fa-user-plus" data-bs-toggle="modal" data-bs-target="#assign-table-modal"></i>
+                            </a>
+                            
+                        </td>
+
+                    </tr>
+                }
+            
+            }
+            else
+            {
+               <tr><td colspan="8">No Records Found</td></tr>
+            }
+            
+        </tbody>
+        
+    </table>
+
+</div>
+
+<div class="modal fade" id="addNewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+</div>
+
+<script>
+                
+        var ddSection = $("#dd-section");
+        var ddTable = $("#dd-table");
+
+        @* $(".assign-table-list-btn").click( function(){
+            
+            var customerId = $(this).data("id");
+            var tokenId = $(this).data("token");
+            var person = $(this).data("person");
+         
+            $(".assign-table-list").attr("data-id", customerId);
+            $(".assign-table-list").attr("data-token", tokenId);
+            $(".assign-table-list").attr("data-personnew", person);
+
+        })
+
+        $(".assign-table-list-btn").click(function(){
+
+            var sectionId = $(this).data("section");
+            console.log("sectionId" , sectionId);
+            $.ajax({
+                type: "GET",                
+                url: "/Section/BindDataForSection",
+                success: function (response) {
+                
+                    ddSection.empty().append('<option disabled selected>Select Section</option>');
+                    $.each(response.sections, function () {
+                        ddSection.append($("<option></option>").val(this['value']).html(this['text']));
+                        ddSection.val(sectionId);
+                    });
+                }
+            })
+
+        }) *@
+
+
+
+        // Function to update the list of selected table names
+function updateSelectedTablesDisplay() {
+    var selectedNames = [];
+    $(".table-checkbox:checked").each(function() {
+        var tableName = $(this).closest('.form-check').find('label').text().trim();
+        selectedNames.push(tableName);
+    });
+    if (selectedNames.length > 0) {
+        $("#selected-tables").html("Selected Tables: <strong>" + selectedNames.join(", ") + "</strong>");
+    } else {
+        $("#selected-tables").html("");
+    }
+}
+
+// When a table checkbox is changed
+$(document).on("change", ".table-checkbox", function() {
+    var checked = $(this).is(":checked");
+    var id = $(this).val();
+    if (checked) {
+        TableToAssign.add(id);
+    } else {
+        TableToAssign.delete(id);
+    }
+    updateSelectedTablesDisplay();
+});
+
+// When No/Cancel/Close is clicked in Assign Table modal, uncheck all checkboxes and clear the set
+$(document).on('click', '.assign-table-cancel, #assign-table-modal .btn-close', function () {
+    $(".table-checkbox").prop("checked", false);
+    TableToAssign.clear();
+    updateSelectedTablesDisplay && updateSelectedTablesDisplay();
+});
+
+function loadTable(sectionId) {
+    $.ajax({
+        type: "GET",
+        url: `/Section/BindDataForTable`,
+        data: { sectionId },
+        success: function (response){
+            ddTable.empty().append('<option></option>');
+            TableToAssign.clear();
+            // ...append your tables here...
+            $.each(response.data, function (i , val) {
+                ddTable.append(`<li>
+                    <div class="form-check ms-3">
+                        <input class="form-check-input table-checkbox border border-secondary" data-capacity="${val.capacity}" type="checkbox" value="${val.id}" id="${val.id}-checkbox">
+                        <label class="form-check-label" for="${val.id}">
+                            ${val.name}
+                        </label>
+                    </div>
+                </li>`);
+            });
+    updateSelectedTablesDisplay && updateSelectedTablesDisplay();
+        }
+    });
+}
+
+        $(".assign-table-list-btn").click(function () {
+
+            var sectionId = $(this).data("section");
+            var customerId = $(this).data("id");
+            var tokenId = $(this).data("token");
+            var person = $(this).data("person");
+
+            // Set attributes for assignment button
+            $(".assign-table-list").attr("data-id", customerId);
+            $(".assign-table-list").attr("data-token", tokenId);
+            $(".assign-table-list").attr("data-personnew", person);
+
+            // Fetch and populate section dropdown
+            $.ajax({
+                type: "GET",
+                url: "/Section/BindDataForSection",
+                success: function (response) {
+                    ddSection.empty().append('<option disabled>Select Section</option>');
+                    $.each(response.sections, function () {
+                        ddSection.append($("<option></option>").val(this['value']).html(this['text']));
+                    });
+
+                    // Set the section dropdown to current sectionId and trigger change
+                    ddSection.val(sectionId);
+                    // Load tables for that section
+                    loadTable(sectionId);
+                }
+            });
+        });
+
+        ddSection.change(function () {
+            // Clear selection set and any checked boxes before loading new tables
+            TableToAssign.clear();
+            $(".table-checkbox").prop("checked", false);
+            updateSelectedTablesDisplay()
+            var sectionId = ddSection.val();
+            loadTable(sectionId);
+
+        });
+
+    function loadTable(sectionId) {
+        $.ajax({
+            type: "GET",
+            url: `/Section/BindDataForTable`,
+            data: { sectionId },
+            success: function (response) {
+                ddTable.empty().append('<option></option>');
+                // Clear the set after loading new table list, just for safety
+                TableToAssign.clear();
+
+                $.each(response.data, function (i, val) {
+                    ddTable.append(`<li>
+                            <div class="form-check ms-3">
+                                <input class="form-check-input table-checkbox border border-secondary" data-capacity="${val.capacity}" type="checkbox" value="${val.id}" id="${val.id}-checkbox">
+                                <label class="form-check-label" for="${val.id}">
+                                    ${val.name} 
+                                </label>
+                            </div>
+                        </li>`);
+                });
+            }
+        });
+    }
+
+    
+    var TableToAssign = new Set();
+    $(document).on("change" , ".table-checkbox" , function(){
+
+        var checked = $(this).is(":checked");
+        var id = $(this).val();
+        if (checked) 
+        {
+            TableToAssign.add(id);
+        }
+        else
+        {
+            TableToAssign.delete(id)
+        }
+
+        console.log("TableToAssign" , TableToAssign);
+        console.log("TableToAssign.length" , TableToAssign.size);
+
+    })
+
+    $(".assign-table-list").click( function(){
+ 
+        if(TableToAssign.size == 0)
+        {
+            toastr.error("Select Atleast One Table To Assign");
+            return;
+        }
+
+        let numberOfPerson = $(this).data("personnew");
+        console.log("numberOfPerson" , numberOfPerson)
+        let totalCapacity = 0 ;
+
+        $(".table-checkbox:checked").each(function () {
+
+            let tableCapacity = parseInt($(this).data('capacity'));
+            totalCapacity += tableCapacity;
+
+            console.log(totalCapacity)
+            
+        });
+
+        if(totalCapacity < numberOfPerson)
+        {
+            toastr.error("Available seats Are Less than No of Person");
+            return;
+        }
+
+        var customerId = $(this).data("id");
+        var tokenId = $(this).data("token");
+
+        console.log("customerId" , customerId)
+        console.log("tokenId" , tokenId);
+
+        var ids = Array.from(TableToAssign);
+
+        console.log("ids :" , ids)
+        
+         $.ajax({
+            type: "POST",
+            url: `/WaitingList/AssignTable`,
+            dataType: "JSON",
+            data: { customerId , ids , tokenId },
+            success: function (response) {
+
+                console.log(response)
+
+                if(response.success)
+                {
+                    toastr.success("Table Asigned !!");
+                    $("#assign-table-modal").modal("hide");
+                    window.location.href = `/orderappmenu/menu?id=${response.data}` 
+                    loadPagedItems();
+
+                }
+
+            }
+        });
+    })
+
+    $(".edit-item-btn").click(function () {
+        var id = $(this).data("id");
+        var body = $("#addNewModal");
+
+        $.ajax({
+            method: "GET",
+            url: "/WaitingList/GetTokenById",
+            data: { id: id },
+            success: function (data) {
+                body.html(data);
+                body.modal("show");
+                
+            }
+        })
+    })
+
+    $("#delete-token-btn").click(function () {
+    var id = $(this).attr("id");
+    console.log(id);
+    $.ajax({
+        type: "POST",
+        url: `/WaitingList/DeleteToken`,
+        data: { id },
+        success: function (response) {
+            if (response.success) {
+                toastr.success(response.message);
+                loadPagedItems();
+                
+                setTimeout(function () {
+                    window.location.reload();
+                }, 800);
+            } else {
+                toastr.error(response.message);
+            }
+        },
+        error: function () {
+            toastr.error('something went wrong');
+        }
+    });
+});
+
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-token-btn").attr("id", id);
+    })
+
+    
+     var addModal = $("#addNewModal");
+
+        $(".add-item-btn").on('click', function (e) {
+            e.preventDefault();
+            loadDataForToken("GetTokenById", addModal);
+        })
+
+        function loadDataForToken(action, element, id) {
+            $.ajax({
+                type: "GET",
+                url: `/WaitingList/${action}`,
+                data: { "id": id },
+                success: function (data) {
+                    element.html(data);
+
+                    if (element == addModal) {
+                        $("#addNewModal").modal("show");
+                    }
+
+                }
+            });
+
+        }
+        function loadPagedItems() {
+
+            var sectionId = $(".section.clicked").data("id");
+
+            $.ajax({
+                type: "GET",
+                url: `/WaitingList/GetAllWaitingTokensBySection`,
+                data: { sectionId },
+                success: function (response) {
+                    $("#list-partial").html(response);
+                    updateLiveTimes();
+                }
+            });
+
+        }
+
+      
+
+    
+
+</script>

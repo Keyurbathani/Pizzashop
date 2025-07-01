@@ -1,0 +1,303 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.KotOrderVM>
+
+
+<div class="swiper">
+
+    <div class="swiper-wrapper">
+
+        @foreach (var order in Model)
+        {
+
+            <div class="swiper-slide">
+
+                <div onclick="openKOTOrder(@Html.Raw(Json.Serialize(order)).ToString())">
+                    <div class="card mt-2 " id="order-card" data-id="@order.OrderNumber" data-category="@order.CategoryId"
+                        style="border-style: dashed;">
+
+                        <div class="card_header p-2">
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary"> # @order.OrderNumber</span>
+                                <div>
+                                    <i class="fa-solid fa-stopwatch"></i>
+                                    <span class="live-time" data-order-time="@order.Date.ToString("O")"></span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span>@order.SectionName * @string.Join(", ", @order.TablesName)</span>
+                            </div>
+                        </div>
+
+                        <div class="card-body" style="height: 10rem;">
+
+                            <div class="order-card-body">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <div class="d-flex justify-content-between">
+                                        <span>@item.Name</span><span>@item.Quantity</span>
+                                    </div>
+
+                                    @if (item.OrderModifiers.Any())
+                                    {
+                                        <ul class="modifier mb-0">
+                                            @foreach (var modifier in item.OrderModifiers)
+                                            {
+                                                <li>@modifier.Name</li>
+                                            }
+                                        </ul>
+                                    }
+                                    <div class="mb-2">
+                                        @if (item.Instruction != null)
+                                        {
+                                            <span class="text-info">Instruction: </span>
+                                            <span>
+                                                @item.Instruction</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+
+                        </div>
+
+                        <div class="card_footer ms-2" style="height: 4rem;">
+                            <div>
+                                @if (Model.FirstOrDefault().Instruction != null)
+                                {
+                                    <span class="text-info">Order Instruction : </span>
+
+                                    <span>
+                                        @Model.FirstOrDefault()!.Instruction</span>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+
+        }
+
+
+    </div>
+
+
+</div>
+
+
+
+<div class="modal fade" id="kot-order-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Order ID: #<span id="order-id"></span></h5>
+                <button class="btn btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="text-secondary d-flex justify-content-between border-secondary border-bottom fw-bold p-2">
+                    <span>Item</span>
+                    <span>Quantity</span>
+                </div>
+                <div id='kot-order-items'>
+
+                </div>
+            </div>
+            <div class="modal-footer mb-3">
+                <button id="submit-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3">Mark As
+                    Prepared</button>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    swiper = new Swiper('.swiper', {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        breakpoints: {
+            576: {
+                slidesPerView: 2,
+            },
+            992: {
+                slidesPerView: 3,
+            },
+            1400: {
+                slidesPerView: 4,
+            }
+        },
+
+        navigation: {
+            nextEl: '#next-btn',
+            prevEl: '#prev-btn',
+        },
+    });
+
+
+    var NewStatus =
+    {
+        InProgress: "InProgress",
+        Ready: "Ready",
+        All: "",
+    };
+
+    var statusNew = status, categoryId;
+
+
+    function openKOTOrder(order) {
+        console.log("order", order)
+        if (statusNew == NewStatus.All) {
+            return;
+        }
+        var kotModal = $("#kot-order-modal");
+
+        kotModal
+            .find("#order-id")
+            .text(order.orderNumber)
+            .data("id", order.orderNumber);
+        var body = "";
+
+        for (var orderItem of order.orderItems) {
+            var modifiers = "";
+            for (var modifier of orderItem.orderModifiers) {
+                modifiers += `<li class="text-secondary"><small>${modifier.name}</small></li>`;
+            }
+
+            body += `<div class="d-flex justify-content-between p-2 kot-item" >
+                  <div>
+                      <div class="form-check">
+                          <input class="form-check-input kot-item-checkbox border-dark border-opacity-50" role="button" type="checkbox"  id="${orderItem.id}-item-checkbox" >
+                          <label class="form-check-label text-start" for="checkChecked">
+                              ${orderItem.name}
+                          </label>
+                      </div>
+                      <ul class="m-1 text-start">
+                        ${modifiers}
+                      </ul>
+                  </div>
+                  <div class="quantity-btn border-primary rounded-1 border" style>
+                      <div class="input-group d-flex align-items-center justify-content-between">
+                          <span class="input-group-btn">
+                              <button type="button" class="quantity-left-minus btn btn-number" data-id="${orderItem.id}"
+                                  data-type="minus" >
+                                  <i class="bi bi-dash-lg"></i>
+                              </button>
+                          </span>
+                          <div>
+                              <span type="text" id="${orderItem.id}-quantity" name="quantity"
+                                  class="form-control input-number border-0" >${orderItem.quantity}</span>
+                          </div>
+                          <button type="button" class="quantity-right-plus btn btn-number" data-id="${orderItem.id}"
+                              data-type="plus" data-max="${orderItem.quantity}" >
+                              <i class="bi bi-plus-lg "></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>`;
+        }
+
+        $("#kot-order-items").html(body);
+        var submitBtn = kotModal.find("#submit-btn");
+        if (statusNew == NewStatus.InProgress) {
+            submitBtn.text("Mark As Prepared");
+        } else {
+            submitBtn.text("Mark As InProgress");
+        }
+        kotModal.modal("show");
+    }
+
+    $(document).ready(function () {
+
+
+        $(document).on("click", ".quantity-right-plus", function (e) {
+            e.preventDefault();
+            var id = $(this).data("id");
+            var quantity = parseInt($(`#${id}-quantity`).text());
+
+            var max = parseInt($(this).data("max"));
+            console.log("max", max, id);
+            if (quantity < max) {
+                $(`#${id}-quantity`).text(quantity + 1);
+            }
+        });
+
+
+        // minus button
+        $(document).on("click", ".quantity-left-minus", function (e) {
+            e.preventDefault();
+            var id = $(this).data("id");
+            var quantity = parseInt($(`#${id}-quantity`).text());
+
+            if (quantity > 0) {
+
+                $(`#${id}-quantity`).text(quantity - 1);
+            }
+        });
+
+
+        // Makrk As Prepared
+        var kotModal = $("#kot-order-modal");
+        kotModal.find("#submit-btn").click(function () {
+            if (statusNew == NewStatus.All) {
+                return;
+            }
+
+            var data = {
+                orderId: kotModal.find("#order-id").data("id"),
+                itemStatusNew: statusNew,
+                orderItems: [],
+            };
+
+            console.log("data.orderId", data.orderId)
+
+            if (statusNew == NewStatus.InProgress) {
+                data.itemStatusNew = NewStatus.Ready;
+            } else if (statusNew == NewStatus.Ready) {
+                data.itemStatusNew = NewStatus.InProgress;
+            }
+
+            $(".kot-item-checkbox:checked").each(function () {
+                var orderItemId = $(this).attr("id").replace("-item-checkbox", "");
+                var quantity = $(this)
+                    .parents(".kot-item")
+                    .find(`#${orderItemId}-quantity`)
+                    .text();
+
+                data.orderItems.push({ id: orderItemId, quantity });
+            });
+
+            if (data.orderItems.length == 0) {
+                toastr.error("No Items Selected to update");
+                return;
+            }
+
+            console.log("data", data)
+
+
+            $.ajax({
+                type: "POST",
+                url: "/KOT/UpdateOrderItemsStatus",
+                data: data,
+                success: function (response) {
+                    if (response.success == true) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                    loadPagedItems();
+                    kotModal.modal("hide");
+                },
+            });
+
+        });
+    });
+
+</script>

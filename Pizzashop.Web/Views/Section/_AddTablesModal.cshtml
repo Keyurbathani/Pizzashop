@@ -1,0 +1,145 @@
+@model Pizzashop.Entity.ViewModels.TableVM;
+
+@{
+    bool IsAdd = (Model?.Id ?? 0) == 0;
+}
+
+<div class="modal-dialog modal-dialog-centered modal-lg">
+
+    <form id="add-item-form" enctype="multipart/form-data">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    @if (IsAdd)
+                    {
+                        <span>Add New Tables</span>
+                    }
+                    else
+                    {
+                        <span>Edit Tables</span>
+                    }
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Add New Item Body  -->
+
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <input type="hidden" asp-for="Id">
+
+                    <div class="col-md-6 mb-3">
+                        <input asp-for="Name" placeholder="Name*" class="form-control py-3 ">
+                        <span asp-validation-for="Name" class="text-danger ms-2"></span>
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="  form-floating ">
+                            <select id="dd-category" role="button" class="form-select section-select"
+                                asp-for="SectionId">
+                                <option selected>Select Section</option>
+                            </select>
+                            <label asp-for="SectionId" class="">Section</label>
+                        </div>
+                        <span asp-validation-for="SectionId" class="text-danger ms-2"></span>
+                    </div>
+
+
+
+                    <div class="col-md-6 mb-3">
+                        <input asp-for="Capacity" type="text" placeholder="Capacity" class="form-control py-3 ">
+                        <span asp-validation-for="Capacity" class="text-danger ms-2"></span>
+                    </div>
+
+                    <div class="col-md-6 ">
+                        <div class="  form-floating mb-3">
+                            <select role="button" class="form-select section-select" asp-for="IsAvailable" disabled>
+                                <option selected value="true">Available</option>
+                                <option value="false"> Occupied</option>
+
+                            </select>
+                            <label asp-for="IsAvailable"></label>
+                            <span asp-validation-for="IsAvailable" class="text-danger ms-2"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer ">
+                <button type="submit" class="btn btn-primary bg-header rounded-0">Save </button>
+                <button type="button" class="btn rounded-0 border-dark me-3" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    var modal = $("#addNewModal");
+
+
+
+    $(document).ready(function () {
+
+        $("form").submit(function (e) {
+            e.preventDefault();
+            var form = $(this);
+            var formData = new FormData(form[0])
+            var action = null;
+            if (@IsAdd.ToString().ToLower()) {
+                action = "AddTables";
+            }
+            else {
+                action = "EditTables";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Section/" + action,
+                dataType: "JSON",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+
+                    if (data.success) {
+                        toastr.success(data.message);
+                        GetPagedTables();
+                        modal.modal("hide")
+                    }
+                    else {
+                        toastr.error(data.message)
+                    }
+                    
+                },
+                error: function (response) {
+                    modal.html(response.responseText)
+                }
+            });
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/Section/BindData",
+            success: function (response) {
+               
+                var sectionId = $(".item-btn.active-new").attr("id");
+                var ddCategory = $("#dd-category");
+             
+                ddCategory.empty().append('<option disabled selected>Select Section</option>');
+                $.each(response.sections, function () {
+                    ddCategory.append($("<option></option>").val(this['value']).attr("selected", "@Model?.SectionId" == this['value']).html(this['text']));
+                    ddCategory.val(sectionId)
+                });
+
+            }
+        })
+    });
+</script>

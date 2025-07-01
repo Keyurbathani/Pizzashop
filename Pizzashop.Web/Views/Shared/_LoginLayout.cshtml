@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] pizzashop</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" >
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
+
+</head>
+
+<body>
+
+    <div class="container-fluid new-contain d-flex flex-wrap">
+
+
+        <div class="row">
+
+            <div class="col-12 col-lg-6 d-flex justify-content-center login-left px-0">
+                <img class="img-fluid" src="~/images/dominos_background.jpg" alt="">
+            </div>
+
+            <div class="col-12 col-lg-6 d-flex flex-column align-items-center justify-content-center login-right">
+
+                <div class="mt-3 pizza-logo d-flex align-items-center">
+                    <img src="~/images/pizzashop_logo.png" alt="">
+                    <h4 class="ms-2">PIZZASHOP</h4>
+                </div>
+                 <partial name="_Notification" />
+                 @RenderBody()
+
+
+            </div>
+
+        </div>
+
+
+
+    <script src="/js/custom.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <partial name="_ValidationScriptsPartial" />
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>

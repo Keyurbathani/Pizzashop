@@ -1,0 +1,362 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.ItemListVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+@* delete item modal *@
+<div class="modal fade " id="delete-item-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete item?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-item-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade " id="multiple-delete-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete Selected Items?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-btn" data-id="@Model.PagedList.FirstOrDefault()?.categoryId" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="tab-pane fade show active table-responsive" id="v-pills-sandwitch" role="tabpanel"
+    aria-labelledby="v-pills-sandwitch-tab" tabindex="0" style="height: 500px;">
+    
+
+       <span id="NotSeclected" class="text-danger fs-4"></span>
+
+        <table class="table table-hover" >
+            
+            <thead class=" text-center border-dark bg-white position-sticky top-0">
+                <tr>
+                    <th scope="col" class="text-start">
+                        <div class="form-check">
+                            <input class="all-check form-check-input border border-secondary" type="checkbox" value=""
+                                id="flexCheckIndeterminate">
+                            <label class="form-check-label ms-2" for="flexCheckIndeterminate">
+                                Name
+                            </label>
+                        </div>
+                    </th>
+                    <th scope="col">Item Type</th>
+                    <th scope="col">Rate</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Available</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center scroll-y-auto">
+
+                @if(Model.PagedList.Count() != 0){ 
+
+                    @foreach (var item in Model.PagedList)
+                    {
+                     <tr class="align-content-center">
+                        <td class="text-start ">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="item-check form-check-input me-3 border border-secondary" type="checkbox" value="" data-id="@item.Id" id="@item.Id">
+                                <div class="form-check-label" for="flexCheckDefault">
+                                    <img id="displayImage"
+                                        src="@(string.IsNullOrEmpty(item.Imageurl) ? Url.Content("~/images/Default_pfp.svg.png") : Url.Content("~/" + item.Imageurl))"
+                                        class="object-fit-cover icon-img rounded-circle" alt="" style="width: 30px; height: 30px;"/>
+                                    <span class="ms-2"> @item.Name</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <img src="~/images/icons/@(item.Type == true ? "veg-icon.svg" :  "non-veg-icon.svg")" alt=""
+                                width="20px">
+                        </td>
+                        <td>
+                            @item.Rate
+                        </td>
+                        <td>
+                            @item.Quantity
+                        </td>
+                        <td>
+                            <div class="form-check form-switch d-flex justify-content-center">
+                                <input disabled class="form-check-input fs-4 " role="button" asp-for="@item.IsAvailable"
+                                    id="@item.Id">
+                            </div>
+                        </td>
+
+                        @if(canDelete || canEdit){
+
+                            <td class="d-flex gap-2 align-items-center justify-content-center text-center">
+
+                                @if(canEdit)
+                                {
+                                    <div>
+                                        <a role="button" type="button" class="edit-item-btn me-2 text-dark fs-4" data-id="@item.Id">
+                                        <i class="fa-solid fa-pencil"></i>
+                                        </a>
+                                    </div>
+                                }
+
+                           
+                               @if(canDelete)
+                               {
+                                    <div> 
+                                        <a data-id="@item.Id" class="nav-link delete-btn ms-2 fs-4">
+                                            <i class="fa-solid fa-trash" data-bs-toggle="modal" data-bs-target="#delete-item-modal"></i>
+                                        </a>            
+                                    </div>
+                                }
+                                
+                            </td>
+                        }
+                        else{
+
+                            <td class="text-danger"> N/A</td>
+                        }
+
+                     </tr>
+                    }
+                
+                }
+                else
+                {
+                  <tr><td colspan="6">No Records Found</td></tr>
+                }
+                
+            </tbody>
+        </table>
+ 
+<div id="items-pagination">
+    <partial name="_Pagination" model="@Model.Pagination" />
+</div>
+
+</div>
+
+
+<script>
+
+     var page = @Model.Pagination.CurrentPage;
+
+    $(".edit-item-btn").click(function () {
+        var id = $(this).data("id");
+        var body = $("#addNewModal");
+
+        $.ajax({
+            method: "GET",
+            url: "/Menu/GetItemById",
+            data: { id: id },
+            success: function (data) {
+                body.html(data);
+                body.modal("show");
+            }
+        })
+    })
+
+    @* Delete item  *@
+        $("#delete-item-btn").click(function () {
+            var id = $(this).attr("id");
+            console.log(id);
+            submitDataInItems("DeleteItem", { "id": id });
+        })
+
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-item-btn").attr("id", id);
+    })
+
+    function submitDataInItems(action, formdata) {
+            $.ajax({
+                type: "POST",
+                url: `/Menu/${action}`,
+                data: formdata,
+                success: function (data) {
+
+                    toastr.success(data.message);
+                    if(action != "DeleteItem")
+                    {
+                        $("#category").html(data);
+                    }
+                    loadPagedItems();
+
+                    
+                },
+                error: function () {
+                    toastr.error('something went wrong');
+                }
+            })
+        }
+
+
+    $.each(itemsToDelete, function (i, val) {
+        $(`#${val}.item-check`).attr("checked", true);
+        var isAllChecked = $('.item-check:checked').length == $('.item-check').length;
+        $(".all-check").prop("checked", isAllChecked)
+    });    
+
+    $(".item-check").change(function () {
+        var checked = $(this).is(":checked");
+        var id = $(this).data("id");
+        if (checked) {
+            itemsToDelete.push(id);
+        }
+        else {
+            removeItem(itemsToDelete, id);
+        }
+
+         if (itemsToDelete.length != 0) 
+            {
+                $("#delete-multiple-items").removeClass("d-none")
+            }
+            else
+            {
+                $("#delete-multiple-items").addClass("d-none")
+            }
+
+        var isAllChecked = $('.item-check:checked').length == $('.item-check').length;
+        $(".all-check").prop("checked", isAllChecked)
+    })
+
+    $(".all-check").change(function () {
+        var checked = $(this).is(":checked");
+        $(".item-check").prop("checked", checked);
+         @*  itemsToDelete = []  *@
+            $(".item-check").change();
+    })
+
+    @* Delete Multiple Items  *@
+    var multipleDeleteModal = $("#multiple-delete-modal");
+
+    $("#delete-multiple-items").click(function () {
+
+    
+        if (itemsToDelete.length == 0) {
+
+            toastr.error("Select Atleast One Item!");
+            return;
+        }
+    
+         multipleDeleteModal.modal("show");
+    });
+
+
+    $("#delete-btn").click(function () {
+
+        $.ajax({
+            type: "POST",
+            url: "/Menu/DeleteMany",
+            data: { ids: itemsToDelete },
+            success: function (response) {
+                if (response.success) {
+                   
+                    loadPagedItems()
+                    $(".active-new.item-btn").click();
+                    toastr.success("Items deleted successfully");
+                    
+                }
+                else {
+
+                    @* toastr.error(response.message); *@
+
+                }
+            }
+        })
+
+    })
+
+    @* Remove Item From Array  *@
+    function removeItem(array, idToDelete) {
+        const index = array.indexOf(idToDelete);
+
+        if (index !== -1) {
+            array.splice(index, 1);
+        }
+    }
+
+        
+
+
+    
+ 
+    function nextPage() {
+       
+    }
+
+    function prevPage() {
+       
+    } 
+
+    $("#items-pagination #next-page-btn").click( function(){
+
+        page = @Model.Pagination.CurrentPage + 1;
+        @* console.log("nextPage " , page) *@
+        loadPagedItems();
+        
+    });
+
+    $("#items-pagination #prev-page-btn").click( function(){
+
+         page = @Model.Pagination.CurrentPage - 1;
+        @* console.log("prevPage " , page) *@
+        loadPagedItems();
+    })
+
+
+
+    $("#items-pagination #pagesizelist").change(function () {
+        page = 1;
+        console.log("pagesizelist " , page)
+        loadPagedItems();
+    })
+
+    function loadPagedItems() {
+        var categoryId = $(".item-btn.active-new").attr("id");
+        var searchString = $("#search").val();
+        var pageSize = $("#items-pagination #pagesizelist").val();
+
+        @* console.log(pageSize) *@
+        
+        $.ajax({
+            type: "GET",
+            url: `/Menu/GetPagedItems`,
+            data: { categoryId, searchString, page, pageSize },
+            success: function (data) {
+                dataTable.html(data);
+            }
+        });
+    }
+
+
+</script>

@@ -1,0 +1,220 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_DashboardLayout";
+}
+
+<!-- Modal -->
+<div class="modal fade" id="custom-date-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-secondary" id="exampleModalLabel">Select Date Range</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md">
+                        <div class="form-floating mb-3">
+                            <input id="fromDate" type="date" name="fromDate" class="form-control"
+                                placeholder="Start Date">
+                            <label for="fromDate">From Date</label>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <input type="date" disabled name="toDate" id="toDate" class="form-control"
+                                placeholder="End Date">
+                            <label for="toDate">To Date</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-2 text-center">
+                <button id="custom-date-submit" type="button" class="btn btn-primary bg-header rounded-0">Submit
+                </button>
+                <button id="custom-date-cancel" type="button" class="btn rounded-0 border-dark me-3"
+                    data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between p-2 align-items-center">
+    <h1 class="text-header">
+        Dashboard
+    </h1>
+    <div class="">
+        <select id="dashboard-time" name="pastDays" class="form-select " aria-label="Default select example">
+            <option selected value="all">All Time</option>
+            <option value="1" data-points="24">Today</option>
+            <option value="7" data-points="7">Last 7 Days</option>
+            <option value="30" data-points="30">Last 30 Days</option>
+            <option value="month">Current Month</option>
+            <option value="custom-date">Custom Date</option>
+            <option value="" hidden>Custom Date</option>
+        </select>
+    </div>
+</div>
+
+<div id="dashboard-partial" class="mx-2">
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+    <script>
+
+        let fromDate, toDate;
+
+        function loadDashboardData() {
+            $.ajax({
+                type: "GET",
+                url: "/Dashboard/GetDashboardData",
+                data: { fromDate, toDate },
+                success: function (response) {
+                    $("#dashboard-partial").html(response);
+                    loadGraph()
+
+                }
+            })
+
+        }
+
+        function loadGraph() {
+            $.ajax({
+                type: "GET",
+                url: "/Dashboard/GetGraphData",
+                data: { fromDate, toDate },
+                success: function (response) {
+                    console.log(response)
+                    let revenueData = response.data.revenueData;
+                    let revenueDates = revenueData.map(r => r.date);
+                    let revenueValues = revenueData.map(r => r.value);
+                    let maxLimit = Math.max(...revenueValues, 1000) / 10 * 11;
+                    maxLimit = Math.ceil(maxLimit / 1000) * 1000;
+                    makeChart("Revenue", revenueDates, revenueValues, maxLimit);
+
+                    let customerGrowthData = response.data.customerGrowthData;
+                    let customerGrowthDates = customerGrowthData.map(cg => cg.date);
+                    let customerGrowthValues = customerGrowthData.map(cg => cg.value);
+                    maxLimit = Math.max(...customerGrowthValues, 5) / 10 * 11;
+                    maxLimit = Math.ceil(maxLimit / 10) * 10;
+                    makeChart("CustomerGrowth", customerGrowthDates, customerGrowthValues, maxLimit);
+                }
+            });
+        }
+        //Revenue-chart  Customer-chart
+        function makeChart(canvas, xValues, yValues, maxLimit) {
+
+            new Chart(canvas, {
+                type: "line",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        label: canvas,
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        data: yValues,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        tension: 0.4,
+                        fill: true
+
+                    }]
+                },
+                options: {
+                    tension: 1,
+                    responsive: true,
+                    scales: {
+                        yAxes: [{ ticks: { min: 0, max: maxLimit } }],
+                    },
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#333',
+                            bodyColor: '#666',
+                            borderColor: '#e0e0e0',
+                            borderWidth: 1
+                        }
+                    }
+                },
+
+            });
+        }
+
+
+        $(document).ready(function () {
+
+            loadDashboardData();
+            
+            loadGraph();
+
+            $("#dashboard-time").change(function () {
+                var pastDay = $(this).val();
+                var date = new Date();
+
+                if (pastDay == "custom-date") {
+                    $("#custom-date-modal").modal("show");
+                    $(this).val("");
+                    return;
+                }
+
+                if (pastDay === "all") {
+                    fromDate = null;
+                    toDate = null;
+                    loadDashboardData();
+                    return;
+                }
+                else if (pastDay === "month") {
+                    fromDate = new Date(date.getFullYear(), date.getMonth(), 2);
+                    toDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+                }
+                else {
+                    fromDate = new Date();  // Clone current date
+                    fromDate.setDate(fromDate.getDate() - parseInt(pastDay) + 1);  // Subtract the selected number of days
+                    toDate = new Date();
+                }
+
+
+                fromDate = fromDate.toISOString().split('T')[0];
+                toDate = toDate.toISOString().split('T')[0];
+
+                loadDashboardData();
+            });
+
+            $("#fromDate").change(function () {
+                var date = $(this).val();
+                $("#toDate").attr("min", date).removeAttr("disabled");
+            });
+
+            $("#toDate").change(function () {
+                var date = $(this).val();
+                $("#fromDate").attr("max", date);
+            });
+
+            $("#custom-date-submit").click(function () {
+                fromDate = $("#fromDate").val();
+                toDate = $("#toDate").val();
+
+                if (fromDate > toDate) {
+                    toastr.error("Please Select Valid Dates!");
+                    return;
+                }
+
+                loadDashboardData();
+                $("#custom-date-modal").modal("hide");
+            });
+
+            $("#custom-date-cancel").click(function () {
+                $("#fromDate").val("").removeAttr("max,min");
+                $("#toDate").val("").removeAttr("max,min").attr("disabled", true);
+            });
+        })
+    </script>
+
+}

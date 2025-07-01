@@ -1,0 +1,385 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.orderApp-logo img{
+    height: 40px;
+    width: 40px;
+}
+
+.orderapp-icon{
+
+    padding: 0.3rem 0.9rem;
+    background-color: #186fa1;
+    color: white;
+    border-radius: 20px;
+    border: 1px solid white;
+    margin-right: 10px;
+    font-size: 13px;
+}
+
+.active-order-app{
+    background-color: #52bae4e3 !important;
+}
+
+.card_header , .card_footer {
+
+    background-color: #807e782f !important;
+}
+
+.clicked{
+
+    border-bottom: 2px solid rgb(27, 102, 240);
+    color:  rgb(27, 102, 240) !important;
+    padding: 0px 5px !important;
+    background-color: #dbd5d571 !important;
+    border-radius: 3px !important;
+}
+
+.status-clicked{
+
+    color: white;
+    background-color: rgb(12, 102, 187) !important;
+    color: white !important;
+}
+
+.dropdown-for-responsive{
+
+    display: none;
+}
+
+@media  screen and (max-width: 650px) {
+    
+     .orderapp-icon-div{
+        display: none;
+     }
+
+     .dropdown-for-responsive{
+        display: block;
+     }
+
+     .active-order-app{
+        background-color: #52bae4e3 !important;
+        display: block;
+        width: 10rem !important;
+        padding: 3px 5px;
+        border-radius: 5px ;
+    }
+
+    
+  }
+@media  screen and (max-width: 680px) {
+    
+    .orderApp-logo span{
+        font-size: 15px !important;
+        color: red;
+    }
+
+  }
+
+  .order-card-body{
+    height: 140px;
+    overflow-y: auto;
+  }
+
+
+  /* Table view */
+
+  .table-indication{
+
+    width: 15px !important;
+    height: 15px !important;
+    border-radius: 50%;
+  }
+
+  @media  screen and (max-width: 600px) {
+    
+    .table-header{
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+    }
+
+    .table-indication-all{
+
+        margin-top: 10px;
+    }
+
+  }
+
+
+.accordion-button {
+  display: flex;
+  justify-content: start;
+  height: 5rem;
+
+}
+
+.accordion-button::after {
+  display: none;
+}
+
+.accordion-button::before {
+  flex-shrink: 0;
+  width: var(--bs-accordion-btn-icon-width);
+  height: var(--bs-accordion-btn-icon-width);
+  border: 2px solid #186fa1;
+  padding: 10px;
+  border-radius: 50%;
+  content: "";
+  background-image: var(--bs-accordion-btn-icon);
+  background-repeat: no-repeat;
+  background-size: var(--bs-accordion-btn-icon-width);
+  transition: var(--bs-accordion-btn-icon-transition);
+  margin-right: 10px;
+  color: #186fa1;
+
+}
+.accordion-button.collapsed::before {
+  border: 2px solid rgb(214, 214, 228) !important;
+}
+
+.accordion-button:not(.collapsed)::before {
+  background-image: var(--bs-accordion-btn-active-icon);
+  transform: var(--bs-accordion-btn-icon-transform);
+}
+
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+.accordion-button:not(.collapsed){
+  background-color: white !important;
+  border: none !important;
+}
+
+.accordion-button:focus{
+  box-shadow:  none;
+}
+
+
+/* ORDER + TABLE STATUS */
+.Pending {
+
+  background-color: #6bc45067 !important;
+  border: 1px solid #97f097;
+
+  .card-title{
+    color: #2dcc4f !important;
+  }
+
+}
+
+.Served , .InProgress{
+  border: 1px solid rgb(94, 156, 206) !important;
+  background-color: #99d1f16b;
+
+  .card-title{
+    color: #186fa1 !important;
+  }
+
+}
+
+.modal-footer button:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.customer-waitingList input:disabled , button:disabled , select:disabled{
+  cursor: not-allowed;
+}
+
+.orderapp-sidebar{
+  background-color: #f8f3f3 !important;
+}
+
+.new-item{
+  background-color: #3466b3f6 !important;
+  font-size: 15px;
+  width: 12rem !important;
+  color:  white !important;
+  border-radius: 15px;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  padding: 5px 0px;
+  border-bottom: 2px solid rgb(15, 95, 216);
+ 
+
+  span{
+    color:  white !important;
+  }
+}
+
+
+/* menu card */
+
+/* .item-card {
+  position: relative;
+  background-color: white;
+  height: 75px;
+  width: 210px;
+  border-radius: 5px;
+  cursor: pointer;
+  }
+
+  .img-card-item {
+  width: 85px !important;
+  height: 72px !important;
+  }
+
+  .price-item {
+  color: #4C5556;
+  }
+  
+  .corner-veg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 35px 35px 0;
+  border-radius: 5px;
+  border-color: transparent #00a65a transparent transparent;
+  }
+  .corner-non {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 35px 35px 0;
+  border-radius: 5px;
+  border-color: transparent #ca240e transparent transparent;
+  }
+  .corner-vegan {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 20px 20px 0;
+  border-radius: 5px;
+  border-color: transparent #e97d18 transparent transparent;
+  }
+
+  .heart-color{
+  color: rgb(18, 90, 199);
+  }
+
+  .modifier-card{
+  position: relative;
+  background-color: rgba(236, 229, 229, 0.808);
+  height: 75px;
+  width: 200px;
+  border-radius: 5px;
+
+  }
+
+  .order-card{
+
+    background-color: #f5eded;
+  }
+
+  .table-bg{
+    background-color: #2e98df69;
+    border-radius:3px ;
+  }
+
+  .ordr-details-btn{
+    color: #186fa1;
+    border: 1px solid #186fa1;
+  }
+
+  .new-bg{
+    background-color: #3391dd73;
+  }
+
+  .item-title {
+    cursor: pointer;
+}
+
+.item-title .toggle-icon {
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+}
+
+.item-title .toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.collapse {
+    padding-left: 15px;
+    border-left: 2px solid #ddd;
+    margin-top: 10px;
+}
+
+.collapse li {
+    padding: 5px 0;
+}
+
+.item-details{
+  height: 40vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+} */
+
+
+.menu-card {
+  background-color: green;
+  border-radius: 12px 0px 12px 12px;
+
+  .card-body {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 250px;
+    height: 70px;
+    background-color: white;
+    border-radius: 10px 35px 10px 10px;
+
+    .menu-img {
+      width: 80px;
+      border-radius: 10px 0px 0px 10px;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .card-content {
+      width: 150px;
+
+      .favorite-icon {
+        cursor: pointer;
+        transition: all 0.4s ease;
+      }
+
+      .favorite-icon:hover {
+        scale: 1.2;
+      }
+    }
+  }
+}
+
+.last-btn-class button:disabled
+{
+  background-color: #9c9fa0b6 !important;
+  color: black !important;
+  cursor: not-allowed !important;
+  border: none;
+}
+.last-btn-class button:enabled
+{
+  border: 1px solid black;
+  color: black;
+  
+}
+
+
+
+
+  

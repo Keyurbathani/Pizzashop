@@ -1,0 +1,240 @@
+@model Pizzashop.Entity.ViewModels.UserProfileModel;
+
+@{
+    ViewData["title"] = "Profile";
+    Layout = (ViewBag.orderLayout == true) ? "_OrderAppLayout" : "_DashboardLayout";
+    var backController = ViewBag.orderLayout == true ? "Table" : "Dashboard" ;
+    var backAction = ViewBag.orderLayout == true ? "Index" : "Index" ;
+
+}
+
+
+<div class="p-4">
+
+    <h3 class="mb-3 text-primary fs-2">
+        My Profile
+    </h3>
+
+    <div class="shadow position-relative">
+
+        <div class="position-absolute w-100 z-0 shadow-lg top-backgroung">
+            <img src="~/images/profile_div_bg.jpg" class="w-100 h-100" alt="">
+        </div>
+
+            <form asp-action="Edit" asp-controller="Dashboard" enctype="multipart/form-data" class="bg-white">
+
+                <div class="bg-white px-5 py-3 d-flex flex-column flex-md-row justify-content-between w-100 align-items-center z-2">
+
+                    <div class="left d-flex flex-column flex-md-row align-items-center gap-3">
+
+                        <div class="position-relative">
+                                    <div
+                                        class="user-details-profile overflow-hidden border border-black border-opacity-50 rounded-circle bg-white shadow-lg">
+                                        <img id="displayImage"
+                                            src="@(string.IsNullOrEmpty(@Model.Imageurl) ? Url.Content("~/images/Default_pfp.svg.png") : Url.Content("~/" + @Model.Imageurl))"
+                                        object-fit-cover" alt="" style="width: 100px; height: 100px;" />
+                                    </div>
+                                    <input type="file" id="imageInput" asp-for="ProfileImage" accept="image/*"
+                                        style="display: none;">
+                                    <input type="hidden" asp-for="Imageurl" />
+                                    <button id="changeImageButton" type="button"
+                                        class="position-absolute bg-white camera-position z-3 rounded-circle border z-2 shadow-sm"><i
+                                            class="fa fa-camera p-2 " aria-hidden="true"></i></button>
+                            <span id="ImageValidation"></span>
+                        </div>
+                        
+                        <div class="pt-2 pt-md-4 px-2 mt-4 ms-3">
+                            <div>
+                                @Model.FisrtName @Model.LastName
+                            </div>
+                            <div class="mt-2">
+                                @Model.Role
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right z-2 mt-3">
+                        @Model.Email
+                    </div>
+
+                </div>
+
+                <div class="row bg-white mx-1">
+
+                    <input type="hidden" class="form-control" id="floatingInput" asp-for="Email">
+                    <input type="hidden" class="form-control" id="floatingInput" asp-for="Id">
+
+                    <div class="col-md-6">
+                        <div class="form-floating my-3 ms-2">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="First Name"
+                                asp-for="FisrtName">
+                            <label for="floatingInput">First Name </label>
+                            <span asp-validation-for="FisrtName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating my-3 me-2">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="Last Name"
+                                asp-for="LastName">
+                            <label for="floatingInput">Last Name </label>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating ms-2">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="User Name"
+                                asp-for="Username">
+                            <label for="floatingInput">User Name </label>
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating me-2">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="Phone number"
+                                asp-for="Phone">
+                            <label for="floatingInput">Phone number</label>
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating my-2 ms-2">
+                            <select id="CountryId" name="CountryId" class="form-select"
+                                asp-items="ViewBag.Countries"></select>
+                            <label for="CountryId" class="float">Country</label>
+                        </div>
+                        <span asp-validation-for="CountryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating my-2">
+                            <select id="StateId" name="StateId" class="form-select" asp-items="ViewBag.States"></select>
+                            <label for="StateId" class="float"> State</label>
+                        </div>
+                        <span asp-validation-for="StateId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating my-2 me-2">
+                            <select id="CityId" name="CityId" class="form-select" asp-items="ViewBag.Cities"></select>
+                            <label for="CityId" class="float">City</label>
+                        </div>
+                        <span asp-validation-for="CityId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="form-floating ms-2">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="Address"
+                                asp-for="Address">
+                            <label for="floatingInput">Address</label>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating me-2">
+                            <input type="number" class="form-control" id="floatingInput" placeholder="Email"
+                                asp-for="Zipcode">
+                            <label for="floatingInput">Zipcode</label>
+                            <span asp-validation-for="Zipcode" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end my-3 gap-2">
+                        <button type="submit" class="btn login-btn bn-bg">Update</button>
+                        <a class="btn btn-secondary me-2" role="button" href="/@backController/@backAction">Cancel</a>
+                    </div>
+
+                </div>
+
+            </form>
+
+           
+
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        // Image Preview & Upload
+        $("#changeImageButton").click(function () {
+            $("#imageInput").click(); // Open file dialog
+        });
+
+        $('#imageInput').change(function (event) {
+                var input = event.target;
+                var reader = new FileReader();
+                 let file = event.target.files[0];
+
+                reader.onload = function (e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    
+                    image.onload = function(){
+                        $('#displayImage').attr('src', reader.result);
+                    }
+
+                    image.onerror = function(){
+                        @* $("#ImageValidation").html("Invalid image file.") *@
+                        toastr.error("Invalid image file. Please select a valid image.");
+                        $("#imageInput").val('');
+                    }
+                    
+                    
+                };
+
+                if (input.files && input.files[0]) {
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }); 
+
+
+        $('#CountryId').change(function () {
+
+            var countryId = $(this).val();
+
+            $("#StateId").empty().append('<option selected disabled hidden>Select State</option>');
+            $("#CityId").empty().append('<option selected disabled hidden>Select City</option>');
+            
+            $.getJSON('@Url.Action("GetStates", "Dashboard")', { countryId: countryId }, function (data) {
+                var stateSelect = $('#StateId');
+
+                $.each(data, function (index, state) {
+                    stateSelect.append($('<option>', {
+                        value: state.id,
+                        text: state.name
+                    }));
+                });
+                @* stateSelect.val(`@Model.StateId`).change(); *@
+            });
+        });
+
+        $('#StateId').change(function () {
+
+            var stateId = $(this).val();
+
+            $("#CityId").empty().append('<option selected disabled hidden>Select City</option>');
+
+            $.getJSON('@Url.Action("GetCities", "Dashboard")', { stateId: stateId }, function (data) {
+                var citySelect = $('#CityId');
+                
+                $.each(data, function (index, city) {
+                    citySelect.append($('<option>', {
+                        value: city.id,
+                        text: city.name
+                    }));
+                });
+                @* citySelect.val(`@Model.CityId`); *@
+            });
+        });
+
+
+        @* $('#CountryId').change(); *@
+
+    });
+</script>

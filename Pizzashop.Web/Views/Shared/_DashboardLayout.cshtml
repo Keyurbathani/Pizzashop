@@ -1,0 +1,289 @@
+@{
+    Func<string, string> IsSelected = (controller) =>
+    {
+        if (ViewContext?.RouteData?.Values["controller"]!.ToString() == controller)
+        {
+            return "active-class";
+        }
+        return string.Empty;
+    };
+}
+
+
+@using System.Security.Claims
+@{
+    var Role = User.FindFirst(ClaimTypes.Role)?.Value;
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
+
+</head>
+
+<body>
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="sidebar px-0 bg-white shadow">
+
+                <div class="offcanvas-lg offcanvas-start dashboard-offcanvas" data-bs-scroll="true"
+                    data-bs-backdrop="false" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+
+                    <div class="offcanvas-header d-flex align-items-center justify-content-between">
+
+
+                        <div class="pizza-logo d-flex align-items-center">
+                            <img src="/images/logos/pizzashop_logo.png" alt="">
+                            <h4 class="ms-2 fs-5">PIZZASHOP</h4>
+                        </div>
+
+                        <button class="nav-link px-3  fs-4 d-lg-none" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+                            aria-label="Toggle navigation">
+                            X
+                        </button>
+                    </div>
+
+                    <div class="offcanvas-body d-lg-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+
+                        <ul class="nav flex-column p-2 mt-3">
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Dashboard")"><a
+                                    href="@Url.Action("Index" , "Dashboard")"
+                                    class="nav-link d-flex d-flex align-items-center gap-2 w-100"><i
+                                        class="fa-solid fa-table-cells-large"></i>Dashboard</a></li>
+
+                            <li class="nav-item d-flex align-items-center  @IsSelected("User")"><a
+                                    href="@Url.Action("Index" , "User")"
+                                    class="nav-link w-100 d-flex align-items-center gap-2"><i
+                                        class="fa-solid fa-users"></i>Users</a></li>
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Role")"><a
+                                    href="@Url.Action("Roles" , "Role")"
+                                    class="nav-link w-100 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-user-plus "></i>Role and
+                                    Permission</a></li>
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Menu")"><a
+                                    href="@Url.Action("Index" , "Menu")"
+                                    class="nav-link w-100 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-bell-concierge "></i>Menu</a></li>
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Section")"><a
+                                    href="@Url.Action("Index" , "Section")"
+                                    class="nav-link w-100 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-square "></i>Table and Section</a></li>
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Tax")"><a
+                                    href="@Url.Action("Index" , "Tax")"
+                                    class="nav-link d-flex w-100 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-indian-rupee-sign "></i>Taxes and Fee</a></li>
+
+                            <li class="nav-item d-flex align-items-center  @IsSelected("Orders")"><a
+                                    href="@Url.Action("Index" , "Orders") "
+                                    class="nav-link w-100 d-flex align-items-center gap-2"><i
+                                        class="fa-solid fa-clipboard "></i>Orders</a></li>
+
+                            <li class="nav-item d-flex align-items-center @IsSelected("Customer")"><a
+                                    href="@Url.Action("Index" , "Customer")"
+                                    class="nav-link w-100 d-flex align-items-center gap-2"><i
+                                        class="fa-duotone fa-solid fa-user "></i>Customers</a></li>
+
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg col-12 px-0">
+
+
+                <div class="header d-flex justify-content-between">
+
+
+                    <div class="left-side d-flex align-items-center justify-content-between">
+
+                        <div>
+                            <ul class="navbar-nav flex-row d-lg-none">
+                                <li class="nav-item text-nowrap">
+                                    <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas"
+                                        data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+                                        aria-label="Toggle navigation">
+                                        <img src="/images/menu-bar.svg" alt="">
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+
+                    </div>
+
+                    <div class="right-side d-flex align-items-center">
+
+                        @if (Role?.ToString().Trim() == "Account Manager")
+                        {
+                            <div class="fs-3 text-white me-2">
+                                <a href="/table/index"><img src="~/images/phone1.png" alt="App"
+                                        style="width: 30px; height: 30px;"></a>
+                            </div>
+                        }
+
+
+
+                        <div class="dropdown me-3 my-1">
+                            <button class="rounded-circle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <img src="~/images/Default_pfp.svg.png" alt="Hi" class="rounded-circle"
+                                    id="userProfileImage">
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                <li class="dropdown-item  d-flex align-items-center gap-3"><img
+                                        src="~/images/Default_pfp.svg.png" alt="Hi" id="userProfileImageDropdown"
+                                        class="rounded-circle">
+                                    <span id="username">USERNAME</span>
+                                </li>
+                                <hr>
+
+                                <li><button class="dropdown-item" type="button"><a
+                                            class="d-flex d-flex align-items-center gap-2 nav-link"
+                                            href="/Dashboard/Profile"><i
+                                                class="fa-solid fa-circle-user"></i>Profile</a></button></li>
+                                <li><button class="dropdown-item" type="button"><a
+                                            class="d-flex d-flex align-items-center gap-2 nav-link"
+                                            href="/Dashboard/ChangePassword"><i
+                                                class="fa-solid fa-rotate-right"></i>Change Password</a></button></li>
+                                <li><button type="button" class="dropdown-item d-flex d-flex align-items-center gap-2"
+                                        data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        <i class="fa-solid fa-right-from-bracket"></i>Log Out</button></li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <!-- Logout Modal -->
+                    <div class="modal fade " id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                        <span>Logout Confirmation</span>
+                                    </h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt=""
+                                        class="mb-2">
+                                    <p>Are you sure you want to Logout?</p>
+                                </div>
+                                <div class="text-center mb-3">
+                                    <a href="@Url.Action("Logout","Dashboard")" type="button"
+                                        class="btn btn-primary bg-header me-2 rounded-0 px-3">Yes</a>
+                                    <button type="button"
+                                        class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                                        data-bs-dismiss="modal">No</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+                <div class="rendered-body">
+
+                    @RenderBody()
+                    <partial name="_Notification" />
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <div id="screenLoader" class="loader-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+
+    <script src="/js/custom.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+        integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+
+        window.addEventListener("beforeunload", function () {
+            document.getElementById("screenLoader").style.display = "flex";
+        });
+
+        $(document).ajaxStart(function () {
+            $("#screenLoader").show();
+        }).ajaxStop(function () {
+            $("#screenLoader").hide();
+        });
+
+        $(document).ready(function () {
+
+            $.ajax({
+                url: "/Dashboard/CurrentProfileImages",
+                type: "GET",
+                success: function (response) {
+
+                    if (response.response.data.imageurl) {
+                        $("#userProfileImage, #userProfileImageDropdown").attr("src", "/" + response.response.data.imageurl);
+                    }
+
+                    $("#username").html(response.response.data.username)
+
+                },
+                error: function () {
+                    console.log("Failed to load user profile image.");
+                }
+            });
+
+            toastr.options = {
+                "preventDuplicates": true,
+                "preventOpenDuplicates": true
+            };
+
+        });
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>

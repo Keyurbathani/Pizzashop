@@ -1,0 +1,224 @@
+@model Pizzashop.Entity.ViewModels.PagedResult<Pizzashop.Entity.ViewModels.TaxListVM>;
+
+@{
+    bool canEdit = bool.Parse(Context.Session.GetString("CanEdit") ?? "false");
+    bool canDelete = bool.Parse(Context.Session.GetString("CanDelete") ?? "false");
+}
+
+@* delete item modal *@
+<div class="modal fade " id="delete-item-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    <span>Delete Confirmation</span>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="~/images/toppng.com-warning-icon-2400x2400.png" width="35px" alt="" class="mb-2">
+                <p>Are you sure you want to Delete Tax?</p>
+            </div>
+            <div class="text-center mb-3">
+                <a id="delete-item-btn" type="button" class="btn btn-primary bg-header me-2 rounded-0 px-3"
+                    data-bs-dismiss="modal">Yes</a>
+                <button type="button" class="btn text-primary bg-white text-header border-primary rounded-0 px-3"
+                    data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="tab-pane fade show active table-responsive" id="v-pills-sandwitch" role="tabpanel"
+    aria-labelledby="v-pills-sandwitch-tab" tabindex="0" style="height: 500px;">
+    
+
+       <span id="NotSeclected" class="text-danger fs-4"></span>
+
+        <table class="table table-hover" >
+            <thead class=" text-center border-dark bg-white position-sticky top-0">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">IsEnabled</th>
+                    <th scope="col">Default</th>
+                    <th scope="col">Tax Value</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center scroll-y-auto">
+
+                @if(Model.PagedList.ToList().Count != 0){ 
+
+                    @foreach (var item in Model.PagedList)
+                    {
+                     <tr class="align-content-center">
+
+                        <td class="text-center">
+                             <span class="ms-2"> @item.Name</span>
+                        </td>
+                        
+                        <td>
+                           @if(@item.TaxType == true){
+                             <span>Percentage</span>
+                           }else{
+                            <span>Flat Amount</span>
+                           }
+                        </td>
+
+                        <td>
+                           <div class="form-check form-switch d-flex justify-content-center">
+                                <input disabled class="form-check-input fs-4 " asp-for="@item.IsActive"
+                                    id="@item.Id">
+                            </div>
+                        </td>
+
+                        <td>
+                           <div class="form-check form-switch d-flex justify-content-center">
+                                <input disabled class="form-check-input fs-4 " role="button" asp-for="@item.IsDefault"
+                                    id="@item.Id">
+                            </div>
+                        </td>
+
+                        <td>
+                            @item.TaxValue
+                        </td>
+
+                        @if(canDelete || canEdit){
+
+                            <td class="d-flex gap-2 justify-content-center">
+
+                                @if(canEdit)
+                                {
+                                     <a role="button" type="button" class="edit-item-btn me-2 text-dark fs-4" data-id="@item.Id">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </a>
+                                }
+
+                           
+                               @if(canDelete)
+                               {
+                                    <a data-id="@item.Id" class="nav-link delete-btn ms-2 fs-4">
+                                        <i class="fa-solid fa-trash" data-bs-toggle="modal" data-bs-target="#delete-item-modal"></i>
+                                    </a>
+                                }
+                                
+                            </td>
+                        }
+                        else{
+
+                            <td></td>
+                        }
+
+
+                       
+                     </tr>
+                    }
+                
+                }
+                else
+                {
+                  <tr><td colspan="6">No Records Found</td></tr>
+                }
+                
+            </tbody>
+        </table>
+ 
+
+
+</div>
+
+<partial name="_Pagination" model="@Model.Pagination" />
+
+
+<script>
+
+    var page = @Model.Pagination.CurrentPage;
+
+    $(".edit-item-btn").click(function () {
+        var id = $(this).data("id");
+        var body = $("#addNewModal");
+
+        $.ajax({
+            method: "GET",
+            url: "/Tax/GetTaxById",
+            data: { id: id },
+            success: function (data) {
+                body.html(data);
+                body.modal("show");
+            }
+        })
+    })
+
+    @* Delete item  *@
+        $("#delete-item-btn").click(function () {
+            var id = $(this).attr("id");
+            console.log(id);
+            submitData("DeleteTax", { "id": id });
+        })
+
+    $(".delete-btn").click(function () {
+        var id = $(this).data("id");
+        $("#delete-item-btn").attr("id", id);
+    })
+
+    function submitData(action, formdata) {
+
+        $.ajax({
+            type: "POST",
+            url: `/Tax/${action}`,
+            data: formdata,
+            success: function (data) {
+
+                toastr.success('successfull');
+                loadPagedItems()
+            },
+            error: function () {
+
+                toastr.error('something went wrong');
+            }
+        })
+    }
+  
+
+    function nextPage() {
+        page = @Model.Pagination.CurrentPage + 1;
+        loadPagedItems();
+    }
+
+    function prevPage() {
+        page = @Model.Pagination.CurrentPage - 1;
+        loadPagedItems();
+    }
+
+
+
+    $("#pagesizelist").change(function () {
+        page = 1;
+        loadPagedItems();
+    })
+
+    function loadPagedItems() {
+        var searchString = $("#search").val();
+        var pageSize = $("#pagesizelist").val();
+
+        @* console.log(pageSize) *@
+        
+        $.ajax({
+            type: "GET",
+            url: `/Tax/GetPagedItems`,
+            data: { searchString, page, pageSize },
+            success: function (data) {
+                dataTable.html(data);
+            }
+        });
+    }
+
+
+</script>

@@ -1,0 +1,151 @@
+@model IEnumerable<Pizzashop.Entity.ViewModels.CategoryVM>;
+
+
+@{
+    ViewData["title"] = "KOT";
+    Layout = "_OrderAppLayout";
+}
+
+
+
+<div class="container-fluid bg-white h-100">
+
+    <span class="header-name fs-3">
+        KOT
+    </span>
+
+    <div class="d-flex flex-wrap gap-4 align-items-center me-2 shadow p-2">
+
+        <div class="ms-2 fs-5 category text-secondary"> All </div>
+
+        @foreach (var category in Model)
+        {
+            <div data-id="@category.Id" id="@category.Name" class="fs-5 text-secondary text-capitalize category">
+                @category.Name</div>
+        }
+
+    </div>
+</div>
+
+<div class="shadow p-3">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="category-name fs-3 text-primary">All</div>
+        <div class="d-flex gap-2">
+            <div id="InProgress" class="status btn btn-light border-secondary">In Progress</div>
+            <div id="Ready" class="status btn btn-light border-secondary">Ready</div>
+            <button class="btn btn-outline-secondary btn-sm  arrow-border" id="prev-btn">
+                <i class="fa-solid fa-chevron-left" id="prevPage"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm arrow-border" id="next-btn">
+                <i class="fa-solid fa-chevron-right" id="nextPage"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="kot-partial">
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+         let swiper;
+
+        // TIME
+        function updateLiveTimes() {
+            $('.live-time').each(function () {
+                const orderTime = new Date($(this).data('order-time'));
+                const now = Date.now();
+                const diff = Math.floor((now - orderTime) / 1000);
+                const days = Math.floor(diff / 86400);
+                const hours = Math.floor((diff % 86400) / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                $(this).text(`${days}D ${hours}H ${minutes}M ${seconds}S`);
+            });
+        }
+        setInterval(updateLiveTimes, 1000)
+
+
+
+        $(".category").first().addClass("clicked");
+        $(".category").click(function () {
+            $(".category").removeClass("clicked");
+            $(this).addClass("clicked");
+        });
+
+
+        // Load Data On first time page load  
+        var id = $(".category.clicked").data("id");
+        var status = $(".status").first().attr("id");
+
+        $.ajax({
+            type: "GET",
+            url: "/KOT/GetOrderByCategory",
+            data: { id, status },
+            success: function (response) {
+                $("#kot-partial").html(response);
+                updateLiveTimes();
+            }
+        })
+
+
+
+
+        $(".category").click(function () {
+
+            var category = $(".category.clicked").attr("id")
+
+            if (category == undefined) {
+                $(".category-name").html("All")
+            }
+            else {
+                $(".category-name").html(category)
+            }
+
+            loadPagedItems();
+
+        });
+
+
+
+        // Status filter
+        $(".status").first().addClass("status-clicked");
+        $(".status").click(function () {
+            $(".status").removeClass("status-clicked");
+            $(this).addClass("status-clicked");
+        });
+
+        $(".status").click(function () {
+
+            status = $(".status.status-clicked").attr("id")
+            loadPagedItems();
+
+        });
+
+
+        function loadPagedItems() {
+
+            var id = $(".category.clicked").data("id");
+
+            $.ajax({
+                type: "GET",
+                url: `/KOT/GetOrderByCategory`,
+                data: { id, status },
+                success: function (response) {
+                    $("#kot-partial").html(response);
+                    updateLiveTimes();
+                }
+            });
+
+        }
+
+
+    </script>
+
+}
