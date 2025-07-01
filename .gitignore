@@ -7,10 +7,6 @@
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# AppSetting
-/PizzaShop.Web/appsettings.json
-/PizzaShop.Web/appsettings.Development.json
-
 # User-specific files
 *.rsuser
 *.suo
